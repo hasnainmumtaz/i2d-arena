@@ -1,24 +1,50 @@
-# i2d-arena
+<div align="center">
 
-An Arena built to test the capabilities of LLMs on data extraction from images.
+# 🎯 i2d-arena
 
-## Features
+**An Arena built to test the capabilities of LLMs on data extraction from images.**
 
-- **Built with LangChain** - Uses LangChain's unified interface for consistent API across providers
-- Support for multiple LLM providers:
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![LangChain](https://img.shields.io/badge/LangChain-✅-green.svg)](https://www.langchain.com/)
+[![License](https://img.shields.io/badge/License-Attribution-blue.svg)](LICENSE)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Features](#-features)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Single Image Mode](#single-image-mode)
+  - [Batch Processing Mode](#batch-processing-mode)
+  - [Model Comparison Mode](#model-comparison-mode)
+  - [Python API](#python-api)
+- [Supported Image Formats](#-supported-image-formats)
+- [Examples](#-examples)
+- [Notes](#-notes)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
+
+## ✨ Features
+
+- 🔗 **Built with LangChain** - Uses LangChain's unified interface for consistent API across providers
+- 🤖 **Multiple LLM Providers** - Support for various vision-capable models:
   - **OpenAI** (GPT-4 Vision) via `langchain-openai`
   - **Anthropic** (Claude 3.5 Sonnet) via `langchain-anthropic`
   - **Google** (Gemini Pro Vision) via `langchain-google-genai`
   - **Ollama** (Local models like LLaVA) via `langchain-ollama`
   - **Hugging Face** (Various vision-language models)
+- 📁 **Flexible Input** - Supports both local image files and image URLs
+- 🎨 **Customizable Prompts** - Tailor transcription prompts to your needs
+- 🔧 **Extensible Architecture** - Easy to extend with new providers using LangChain's modular design
+- 📊 **Batch Processing** - Process multiple images with ground truth comparison
+- ⚖️ **Model Comparison** - Compare performance across different LLM models
 
-- Supports both local image files and image URLs
-- Customizable prompts for transcription
-- Easy to extend with new providers using LangChain's modular architecture
+## 🚀 Installation
 
-## Installation
-
-1. Install dependencies:
+### Step 1: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
@@ -32,7 +58,9 @@ This will install:
 - `requests` - For HTTP requests (used by HuggingFace)
 - `python-dotenv` - For loading API keys from .env file
 
-2. Set up API keys (choose based on your provider):
+### Step 2: Set Up API Keys
+
+Choose based on your provider:
 
 **Option 1: Using .env file (Recommended)**
 ```bash
@@ -61,13 +89,15 @@ export GOOGLE_API_KEY="your-api-key"
 export HUGGINGFACE_API_KEY="your-api-key"
 ```
 
-**Note:** The `.env` file takes precedence if both `.env` and environment variables are set. Make sure to add `.env` to your `.gitignore` to keep your keys secure!
+> **Note:** The `.env` file takes precedence if both `.env` and environment variables are set. Make sure to add `.env` to your `.gitignore` to keep your keys secure!
 
-3. For Ollama (local models):
-   - Install Ollama from https://ollama.ai
-   - Pull a vision model: `ollama pull llava`
+### Step 3: Ollama Setup (Optional - for local models)
 
-## Usage
+If you want to use local models:
+- Install Ollama from [https://ollama.ai](https://ollama.ai)
+- Pull a vision model: `ollama pull llava`
+
+## 💻 Usage
 
 ### Single Image Mode
 
@@ -113,15 +143,15 @@ python image_transcriber.py --batch --images-dir images --provider openai
 ```
 
 **Batch Processing Features:**
-- Processes all images in the specified directory
-- Automatically matches images with ground truth files (same filename, different extension)
-- Saves results to JSON file
-- Generates evaluation report comparing transcriptions with ground truth
-- Shows progress and statistics
+- ✅ Processes all images in the specified directory
+- 🔗 Automatically matches images with ground truth files (same filename, different extension)
+- 💾 Saves results to JSON file
+- 📊 Generates evaluation report comparing transcriptions with ground truth
+- 📈 Shows progress and statistics
 
 **Output Files:**
-- `batch_results.json` - Contains all transcriptions and metadata
-- `batch_results_report.json` - Detailed evaluation report with metrics
+- 📄 `batch_results.json` - Contains all transcriptions and metadata
+- 📊 `batch_results_report.json` - Detailed evaluation report with metrics
 
 ### Model Comparison Mode
 
@@ -148,16 +178,16 @@ python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt
 ```
 
 **Model Comparison Features:**
-- Processes the same images with multiple models
-- Compares success rates, processing times, and accuracy
-- Generates side-by-side comparison reports
-- Saves individual model results for detailed analysis
-- Identifies best performing models for different metrics
+- 🔄 Processes the same images with multiple models
+- 📊 Compares success rates, processing times, and accuracy
+- 📋 Generates side-by-side comparison reports
+- 💾 Saves individual model results for detailed analysis
+- 🏆 Identifies best performing models for different metrics
 
 **Comparison Output Files:**
-- `model_comparison_report.json` - Detailed comparison with per-image and per-model metrics
-- `results_<model_name>.json` - Individual results for each model
-- `comparison_results/` - Directory with organized results (if --output-dir specified)
+- 📊 `model_comparison_report.json` - Detailed comparison with per-image and per-model metrics
+- 📄 `results_<model_name>.json` - Individual results for each model
+- 📁 `comparison_results/` - Directory with organized results (if --output-dir specified)
 
 ### Python API
 
@@ -278,14 +308,14 @@ comparator.save_comparison_results(
 )
 ```
 
-## Supported Image Formats
+## 🖼️ Supported Image Formats
 
-- JPEG/JPG
-- PNG
-- WebP
-- Other formats supported by PIL/Pillow
+- **JPEG/JPG** - Standard photo format
+- **PNG** - Lossless image format
+- **WebP** - Modern web image format
+- **Other formats** - Any format supported by PIL/Pillow
 
-## Examples
+## 📚 Examples
 
 ### Basic Transcription
 ```bash
@@ -302,27 +332,41 @@ python image_transcriber.py document.jpg --prompt "Extract all text from this im
 python image_transcriber.py scene.jpg --prompt "Provide a detailed description of this scene, including all objects, people, and their positions"
 ```
 
-## Notes
+## 📝 Notes
 
-- **LangChain Benefits**: Using LangChain provides a unified interface, making it easy to switch between providers and extend functionality
-- **API Costs**: Using cloud providers (OpenAI, Anthropic, Google) will incur API costs
-- **Ollama**: Free and runs locally, but requires installation and model download
-- **Hugging Face**: Some models are free, but may have rate limits. Note: HuggingFace uses direct API calls as LangChain's HuggingFace integration for vision models is limited
-- **Image Size**: Very large images may need to be resized before processing
-- **Model Parameters**: You can pass additional parameters (like `temperature`, `max_tokens`) via kwargs when initializing transcribers
+- 🔗 **LangChain Benefits**: Using LangChain provides a unified interface, making it easy to switch between providers and extend functionality
+- 💰 **API Costs**: Using cloud providers (OpenAI, Anthropic, Google) will incur API costs
+- 🆓 **Ollama**: Free and runs locally, but requires installation and model download
+- 🤗 **Hugging Face**: Some models are free, but may have rate limits. Note: HuggingFace uses direct API calls as LangChain's HuggingFace integration for vision models is limited
+- 📏 **Image Size**: Very large images may need to be resized before processing
+- ⚙️ **Model Parameters**: You can pass additional parameters (like `temperature`, `max_tokens`) via kwargs when initializing transcribers
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-1. **Import Errors**: Make sure all required packages are installed: `pip install -r requirements.txt`
-2. **API Key Errors**: 
-   - Verify your API key is set correctly in `.env` file or environment variables
-   - Check that `.env` file exists and contains the correct keys
-   - Ensure `.env` file is in the same directory as the script
-3. **Ollama Connection**: Ensure Ollama is running: `ollama serve`
-4. **Image Loading**: Check that the image path is correct and the file exists
-5. **.env file not loading**: Make sure `python-dotenv` is installed: `pip install python-dotenv`
+| Issue | Solution |
+|-------|----------|
+| **Import Errors** | Make sure all required packages are installed: `pip install -r requirements.txt` |
+| **API Key Errors** | Verify your API key is set correctly in `.env` file or environment variables. Check that `.env` file exists and contains the correct keys. Ensure `.env` file is in the same directory as the script. |
+| **Ollama Connection** | Ensure Ollama is running: `ollama serve` |
+| **Image Loading** | Check that the image path is correct and the file exists |
+| **.env file not loading** | Make sure `python-dotenv` is installed: `pip install python-dotenv` |
 
-## License
+## 📄 License
 
-MIT License - feel free to use and modify as needed.
+This project is open source and available for use and experimentation. You are free to:
+
+- ✅ Use the code for personal or commercial projects
+- ✅ Modify and adapt the code to your needs
+- ✅ Experiment with different models and configurations
+- ✅ Share your improvements and findings
+
+**Attribution Requirement:** When using this work, please provide proper attribution to the original project. This helps others discover and benefit from the arena.
+
+---
+
+<div align="center">
+
+**Built with ❤️ for the LLM research community**
+
+</div>
 
