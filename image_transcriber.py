@@ -43,6 +43,10 @@ class ImageTranscriber:
             # For URLs, use directly
             image_url = image_path_str
             image_content = {"type": "image_url", "image_url": image_url}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": image_url}
         else:
             # For local files, encode as base64
             with open(image_path_str, 'rb') as f:
@@ -191,6 +195,10 @@ Be precise and extract the exact values as they appear in the image. If a field 
         # Load and encode image
         image_path_str = str(image_path)
         if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
             image_url = image_path_str
             image_content = {"type": "image_url", "image_url": {"url": image_url}}
         else:
@@ -487,6 +495,62 @@ def create_transcriber(provider: str, model_name: Optional[str] = None, api_key:
         raise ValueError(f"Unknown provider: {provider}")
 
 
+def process_orientation_test_mode(args):
+    """Handle orientation test mode"""
+    from orientation_test import OrientationTester
+    
+    # Parse model configurations from command line
+    # Format: --models "name1:provider1:model1" "name2:provider2:model2"
+    model_configs = []
+    
+    if args.models:
+        for model_spec in args.models:
+            parts = model_spec.split(':')
+            if len(parts) >= 3:
+                name, provider, model_name = parts[0], parts[1], parts[2]
+                config = {
+                    'name': name,
+                    'provider': provider,
+                    'model_name': model_name,
+                    'api_key': args.api_key  # Use same API key for all if provided
+                }
+                model_configs.append(config)
+            else:
+                print(f"Warning: Invalid model specification '{model_spec}'. Expected format: 'name:provider:model_name'")
+    else:
+        # Default: gpt-4o-mini vs gpt-4o
+        model_configs = [
+            {'name': 'GPT-4o-mini', 'provider': 'openai', 'model_name': 'gpt-4o-mini'},
+            {'name': 'GPT-4o', 'provider': 'openai', 'model_name': 'gpt-4o'}
+        ]
+    
+    if not model_configs:
+        print("Error: No valid model configurations provided")
+        return 1
+    
+    # Initialize orientation tester
+    tester = OrientationTester(images_dir=args.images_dir)
+    
+    # Run orientation test
+    parallel = not args.no_parallel
+    report = tester.test_batch(
+        model_configs=model_configs,
+        max_images=args.max_images,
+        replications=args.replications,
+        parallel=parallel,
+        max_workers=args.max_workers
+    )
+    
+    # Print summary
+    tester.print_summary(report)
+    
+    # Save results
+    output_file = args.output or "orientation_test_results.json"
+    tester.save_results(report, output_file)
+    
+    return 0
+
+
 def process_comparison_mode(args):
     """Handle model comparison mode"""
     from model_comparator import ModelComparator
@@ -639,6 +703,12 @@ Examples:
   
   # Model comparison with custom models
   python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt --models "GPT-4o-mini:openai:gpt-4o-mini" "GPT-4o:openai:gpt-4o" "Claude:anthropic:claude-3-5-sonnet-20241022"
+  
+  # Orientation test with single model
+  python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o"
+  
+  # Orientation test with multiple replications
+  python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o" --replications 3
         """
     )
     
@@ -647,6 +717,8 @@ Examples:
                        help="Enable batch processing mode")
     parser.add_argument("--compare", action="store_true",
                        help="Enable model comparison mode")
+    parser.add_argument("--orientation-test", action="store_true",
+                       help="Enable orientation test mode")
     
     # Single image mode arguments
     parser.add_argument("image", nargs="?", help="Path to image file or image URL (for single image mode)")
@@ -662,9 +734,15 @@ Examples:
     parser.add_argument("--max-images", type=int,
                        help="Maximum number of images to process (batch/comparison mode)")
     
-    # Comparison mode arguments
+    # Comparison/Orientation test mode arguments
     parser.add_argument("--models", nargs="+",
-                       help="Model specifications for comparison (format: 'name:provider:model_name'). Example: 'GPT-4o-mini:openai:gpt-4o-mini' 'GPT-4o:openai:gpt-4o'")
+                       help="Model specifications for comparison/orientation test (format: 'name:provider:model_name'). Example: 'GPT-4o-mini:openai:gpt-4o-mini' 'GPT-4o:openai:gpt-4o'")
+    parser.add_argument("--replications", type=int, default=1,
+                       help="Number of replications per test (for orientation test mode, default: 1)")
+    parser.add_argument("--no-parallel", action="store_true",
+                       help="Disable parallel processing (for orientation test mode)")
+    parser.add_argument("--max-workers", type=int, default=10,
+                       help="Maximum number of parallel workers (for orientation test mode, default: 10)")
     
     # Common arguments
     parser.add_argument("--provider", choices=["openai", "anthropic", "google", "ollama", "huggingface"],
@@ -677,14 +755,16 @@ Examples:
     args = parser.parse_args()
     
     # Determine mode
-    if args.compare:
+    if args.orientation_test:
+        return process_orientation_test_mode(args)
+    elif args.compare:
         return process_comparison_mode(args)
     elif args.batch:
         return process_batch_mode(args)
     elif args.image:
         return process_single_mode(args)
     else:
-        parser.error("Either provide an image path (single mode), use --batch flag (batch mode), or --compare flag (comparison mode)")
+        parser.error("Either provide an image path (single mode), use --batch flag (batch mode), --compare flag (comparison mode), or --orientation-test flag (orientation test mode)")
 
 
 if __name__ == "__main__":
