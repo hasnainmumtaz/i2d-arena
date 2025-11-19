@@ -1,6 +1,6 @@
-# Image Transcriber using LLM Models with LangChain
+# i2d-arena
 
-A flexible Python script that can transcribe images using various LLM (Large Language Model) providers with vision capabilities. Built with **LangChain** for a unified interface and easy extensibility.
+An Arena built to test the capabilities of LLMs on data extraction from images.
 
 ## Features
 
