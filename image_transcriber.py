@@ -42,11 +42,11 @@ class ImageTranscriber:
         if image_path_str.startswith(('http://', 'https://')):
             # For URLs, use directly
             image_url = image_path_str
-            image_content = {"type": "image_url", "image_url": image_url}
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
         elif image_path_str.startswith('data:'):
             # For data URLs, use directly
             image_url = image_path_str
-            image_content = {"type": "image_url", "image_url": image_url}
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
         else:
             # For local files, encode as base64
             with open(image_path_str, 'rb') as f:
@@ -63,7 +63,7 @@ class ImageTranscriber:
                 mime_type = "image/gif"
             
             image_url = f"data:{mime_type};base64,{base64_image}"
-            image_content = {"type": "image_url", "image_url": image_url}
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
         
         # Create message with image
         message = HumanMessage(
@@ -601,13 +601,15 @@ def process_comparison_mode(args):
     # Print summary
     comparator.print_comparison_summary(comparison_result)
     
-    # Generate report
-    report_file = args.output or "model_comparison_report.json"
-    comparator.generate_comparison_report(comparison_result, report_file)
+    # Generate report only if explicitly requested
+    if args.output:
+        comparator.generate_comparison_report(comparison_result, args.output)
     
     # Save results to directory
-    if args.output_dir:
-        comparator.save_comparison_results(comparison_result, args.output_dir)
+    # Save results to directory
+    # Always save to default directory if not specified
+    output_dir = args.output_dir or "results/comparison"
+    comparator.save_comparison_results(comparison_result, output_dir)
     
     return 0
 
@@ -698,16 +700,16 @@ Examples:
   # Batch processing
   python image_transcriber.py --batch --images-dir images --ground-truth-dir gdt --provider openai
   
-  # Model comparison (compare GPT-4o-mini vs GPT-4o)
+  # As-is Data Extraction (compare GPT-4o-mini vs GPT-4o)
   python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt
   
-  # Model comparison with custom models
+  # As-is Data Extraction with custom models
   python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt --models "GPT-4o-mini:openai:gpt-4o-mini" "GPT-4o:openai:gpt-4o" "Claude:anthropic:claude-3-5-sonnet-20241022"
   
-  # Orientation test with single model
+  # Orientation Extraction Test with single model
   python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o"
   
-  # Orientation test with multiple replications
+  # Orientation Extraction Test with multiple replications
   python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o" --replications 3
         """
     )
@@ -716,9 +718,9 @@ Examples:
     parser.add_argument("--batch", action="store_true",
                        help="Enable batch processing mode")
     parser.add_argument("--compare", action="store_true",
-                       help="Enable model comparison mode")
+                       help="Enable As-is Data Extraction mode")
     parser.add_argument("--orientation-test", action="store_true",
-                       help="Enable orientation test mode")
+                       help="Enable Orientation Extraction Test mode")
     
     # Single image mode arguments
     parser.add_argument("image", nargs="?", help="Path to image file or image URL (for single image mode)")

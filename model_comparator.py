@@ -103,10 +103,10 @@ class ModelComparator:
             
             comparison_data[model_name] = batch_result
             
-            # Save individual results if requested
-            if save_individual_results:
-                output_file = f"results_{model_name.replace(' ', '_').lower()}.json"
-                processor.save_results(batch_result, output_file)
+            comparison_data[model_name] = batch_result
+            
+            # Individual results are now saved via save_comparison_results to results/comparison/
+            # We skip saving to the main directory to avoid clutter
         
         return ModelComparisonResult(
             models=model_names,
@@ -260,7 +260,7 @@ class ModelComparator:
         """Print a formatted comparison summary"""
         
         print("\n" + "="*70)
-        print("MODEL COMPARISON SUMMARY")
+        print("AS-IS DATA EXTRACTION SUMMARY")
         print("="*70)
         
         # Calculate detailed metrics for all models
@@ -273,26 +273,6 @@ class ModelComparator:
                 "basic": basic_metrics,
                 "detailed": detailed_metrics
             }
-        
-        # Basic metrics table
-        print("\nBasic Metrics:")
-        header = f"{'Model':<30} {'Success Rate':<15} {'Avg Time (s)':<15} {'Total Time (s)':<15}"
-        print(header)
-        print("-" * 70)
-        
-        for model_name in comparison_result.models:
-            basic = model_metrics[model_name]["basic"]
-            success_rate = basic.successful_transcriptions / basic.total_images if basic.total_images > 0 else 0
-            success_rate_str = f"{success_rate:.1%}"
-            
-            row = f"{model_name:<30} {success_rate_str:<15} {basic.average_processing_time:<15.2f} {basic.total_processing_time:<15.2f}"
-            print(row)
-        
-        print("="*70)
-        
-        # Overall accuracy comparison
-        print("\nOverall Accuracy Comparison:")
-        print("-" * 70)
         accuracy_data = []
         for model_name in comparison_result.models:
             overall_acc = model_metrics[model_name]["detailed"]["overall_accuracy"]
@@ -365,23 +345,21 @@ class ModelComparator:
     def save_comparison_results(
         self,
         comparison_result: ModelComparisonResult,
-        output_dir: str = "comparison_results"
+        output_dir: str = "results/comparison"
     ):
         """Save all comparison results to a directory"""
         output_path = Path(output_dir)
-        output_path.mkdir(exist_ok=True)
+        output_path.mkdir(parents=True, exist_ok=True)
         
         # Save individual model results
         for model_name in comparison_result.models:
             batch_result = comparison_result.comparison_data[model_name]
-            processor = BatchProcessor(
-                transcriber=None,  # Not needed for saving
-                images_dir=self.images_dir,
-                ground_truth_dir=self.ground_truth_dir
-            )
-            # We need to manually save since processor needs transcriber
-            # Let's create a simple save function
-            filename = f"{model_name.replace(' ', '_').lower()}_results.json"
+            
+            # Calculate metrics for this model
+            metrics = self.evaluator.calculate_metrics(batch_result)
+            detailed_metrics = self.evaluator.calculate_detailed_metrics(batch_result)
+            
+            filename = f"{model_name.replace(' ', '_').lower()}.json"
             filepath = output_path / filename
             
             output_data = {
@@ -391,6 +369,13 @@ class ModelComparator:
                 "successful": batch_result.successful,
                 "failed": batch_result.failed,
                 "processing_time": batch_result.processing_time,
+                "metrics": {
+                    "success_rate": metrics.successful_transcriptions / metrics.total_images if metrics.total_images > 0 else 0,
+                    "average_processing_time": metrics.average_processing_time,
+                    "total_processing_time": metrics.total_processing_time,
+                    "overall_accuracy": detailed_metrics["overall_accuracy"],
+                    "field_statistics": detailed_metrics["field_statistics"]
+                },
                 "results": [
                     {
                         "image_path": r.image_path,

@@ -46,6 +46,7 @@ comparison_results/
 batch_results*.json
 model_comparison_report.json
 results_*.json
+!results/
 
 # OS
 .DS_Store

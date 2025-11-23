@@ -542,13 +542,13 @@ Respond with only the angle value (0, 90, 180, or 270)."""
     
     def save_results(self, report: OrientationTestReport, output_path: str):
         """
-        Save orientation test results to JSON file
+        Save orientation test results to JSON file and individual model files
         
         Args:
             report: OrientationTestReport to save
-            output_path: Path to output JSON file
+            output_path: Path to output summary JSON file
         """
-        # Convert dataclasses to dicts
+        # Save summary report
         output_data = {
             'timestamp': report.timestamp,
             'images_dir': report.images_dir,
@@ -574,7 +574,36 @@ Respond with only the angle value (0, 90, 180, or 270)."""
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2, ensure_ascii=False)
         
-        print(f"\nResults saved to: {output_path}")
+        print(f"\nSummary results saved to: {output_path}")
+        
+        # Save individual model results to results/orientation
+        results_dir = Path("results/orientation")
+        results_dir.mkdir(parents=True, exist_ok=True)
+        
+        for model_name in report.models_tested:
+            summary = report.summary[model_name]
+            model_results = [r for r in report.results if r.model_name == model_name]
+            
+            model_data = {
+                "model": model_name,
+                "timestamp": report.timestamp,
+                "summary": {
+                    'total_tests': summary.total_tests,
+                    'correct_detections': summary.correct_detections,
+                    'accuracy': summary.accuracy,
+                    'accuracy_by_rotation': summary.accuracy_by_rotation,
+                    'mean_processing_time': summary.mean_processing_time
+                },
+                "results": [asdict(r) for r in model_results]
+            }
+            
+            filename = f"{model_name.replace(' ', '_').lower()}.json"
+            filepath = results_dir / filename
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(model_data, f, indent=2, ensure_ascii=False)
+                
+        print(f"Individual model results saved to: {results_dir}/")
     
     def print_summary(self, report: OrientationTestReport):
         """Print a formatted summary of the orientation test results"""

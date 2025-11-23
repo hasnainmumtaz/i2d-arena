@@ -56,7 +56,10 @@ class BatchProcessor:
         for ext in extensions:
             image_files.extend(self.images_dir.glob(f"*{ext}"))
             image_files.extend(self.images_dir.glob(f"*{ext.upper()}"))
-        return sorted(image_files)
+        
+        # Deduplicate files (handles case-insensitive filesystems where *.jpg and *.JPG match the same file)
+        unique_files = list(set(str(f) for f in image_files))
+        return sorted([Path(f) for f in unique_files])
     
     def load_ground_truth(self, image_path: Path) -> Optional[Dict]:
         """Load ground truth for an image file"""
