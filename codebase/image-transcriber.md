@@ -130,14 +130,19 @@ The base class defines the common interface for all transcriber implementations.
    - Flag: `--batch`
    - Options: `--images-dir`, `--ground-truth-dir`, `--output`, `--max-images`, `--report`
 
-3. **Comparison Mode**: Compare multiple models
+3. **As-is Data Extraction Mode**: Compare multiple models for data extraction
    - Flag: `--compare`
    - Options: `--models`, `--images-dir`, `--ground-truth-dir`, `--output`, `--output-dir`
+
+4. **Orientation Extraction Test Mode**: Test orientation detection capabilities
+   - Flag: `--orientation-test`
+   - Options: `--models`, `--images-dir`, `--output-dir`
 
 **Mode Handlers**:
 - `process_single_mode(args)`: Handles single image processing
 - `process_batch_mode(args)`: Handles batch processing (delegates to `BatchProcessor`)
-- `process_comparison_mode(args)`: Handles model comparison (delegates to `ModelComparator`)
+- `process_comparison_mode(args)`: Handles as-is data extraction (delegates to `ModelComparator`)
+- `process_orientation_test_mode(args)`: Handles orientation testing (delegates to `OrientationTest`)
 
 ## Environment Variables
 

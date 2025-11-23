@@ -48,7 +48,8 @@ The Image Transcriber is designed to extract text and information from images us
 - **Multi-Provider Support**: Works with OpenAI, Anthropic, Google, Ollama, and HuggingFace
 - **Structured Output**: Extracts structured JSON data from invoices/receipts
 - **Batch Processing**: Process multiple images with parallel execution
-- **Model Comparison**: Compare performance of different models
+- **As-is Data Extraction**: Compare performance of different models for data extraction
+- **Orientation Extraction Test**: Test model capabilities in detecting image orientation
 - **Evaluation**: Compare transcriptions with ground truth data
 - **CLI Interface**: Easy-to-use command-line interface
 
@@ -59,7 +60,11 @@ The Image Transcriber is designed to extract text and information from images us
 ├── image_transcriber.py      # Main transcriber module
 ├── batch_processor.py         # Batch processing functionality
 ├── evaluator.py               # Evaluation and metrics
-├── model_comparator.py        # Model comparison functionality
+├── model_comparator.py        # As-is data extraction functionality
+├── orientation_test.py        # Orientation testing functionality
+├── compile_results.py         # Result compilation script
+├── generate_dashboard.py      # Dashboard generation script
+├── dashboard.html             # Generated results dashboard
 ├── requirements.txt           # Python dependencies
 ├── README.md                  # User documentation
 └── codebase/                  # This documentation
@@ -67,7 +72,7 @@ The Image Transcriber is designed to extract text and information from images us
     ├── image-transcriber.md   # Image transcriber module docs
     ├── batch-processing.md    # Batch processing module docs
     ├── evaluation.md          # Evaluation module docs
-    ├── model-comparison.md    # Model comparison module docs
+    ├── model-comparison.md    # As-is data extraction module docs
     └── architecture.md        # Architecture overview
 ```
 

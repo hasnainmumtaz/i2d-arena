@@ -1,8 +1,8 @@
-# Model Comparison Module
+# As-is Data Extraction Module
 
 ## Overview
 
-The `model_comparator.py` module provides functionality for comparing the performance of multiple LLM models on the same set of images. It generates comprehensive comparison reports with side-by-side metrics.
+The `model_comparator.py` module provides functionality for comparing the performance of multiple LLM models on the same set of images for "As-is Data Extraction". It generates comprehensive comparison reports with side-by-side metrics.
 
 ## Architecture
 
@@ -187,16 +187,17 @@ ModelComparator(images_dir, ground_truth_dir=None)
 
 **Output Sections**:
 
-1. **Basic Metrics Table**:
    ```
    Model                          Success Rate    Avg Time (s)    Total Time (s)
+   ------------------------------------------------------------------------------
    ------------------------------------------------------------------------------
    GPT-4o-mini                    100.0%         3.50            105.00
    GPT-4o                          100.0%         4.20            126.00
    ```
 
-2. **Overall Accuracy Comparison**:
    ```
+   AS-IS DATA EXTRACTION SUMMARY
+   ======================================================================
    Model                          Accuracy
    ------------------------------------------------------------------------------
    GPT-4o                          92.0%
