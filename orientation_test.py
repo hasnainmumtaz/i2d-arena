@@ -26,6 +26,9 @@ class OrientationTestResult:
     processing_time: Optional[float] = None
     error: Optional[str] = None
     replication: int = 1  # Replication number (1, 2, 3, etc.)
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
 
 
 @dataclass
@@ -38,6 +41,12 @@ class OrientationTestSummary:
     accuracy_by_rotation: Dict[int, Dict[str, float]]  # rotation -> {accuracy, count}
     consistency_score: Optional[float] = None  # For replications > 1
     mean_processing_time: Optional[float] = None
+    total_input_tokens: Optional[int] = None
+    total_output_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
+    average_input_tokens: Optional[float] = None
+    average_output_tokens: Optional[float] = None
+    average_total_tokens: Optional[float] = None
 
 
 @dataclass
@@ -234,6 +243,12 @@ Respond with only the angle value (0, 90, 180, or 270)."""
             
             processing_time = time.time() - start_time
             
+            # Get token usage from transcriber if available
+            token_usage = getattr(transcriber, 'get_last_token_usage', lambda: {})()
+            input_tokens = token_usage.get('input_tokens') if isinstance(token_usage, dict) else None
+            output_tokens = token_usage.get('output_tokens') if isinstance(token_usage, dict) else None
+            total_tokens = token_usage.get('total_tokens') if isinstance(token_usage, dict) else None
+            
             return OrientationTestResult(
                 image_path=str(image_path),
                 actual_rotation=rotation_angle,
@@ -242,7 +257,10 @@ Respond with only the angle value (0, 90, 180, or 270)."""
                 response=response if isinstance(response, str) else str(response),
                 is_correct=is_correct,
                 processing_time=processing_time,
-                replication=replication
+                replication=replication,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=total_tokens
             )
         
         except Exception as e:
@@ -256,7 +274,10 @@ Respond with only the angle value (0, 90, 180, or 270)."""
                 is_correct=False,
                 processing_time=processing_time,
                 error=str(e),
-                replication=replication
+                replication=replication,
+                input_tokens=None,
+                output_tokens=None,
+                total_tokens=None
             )
     
     def find_image_files(self, extensions: Tuple[str, ...] = ('.jpg', '.jpeg', '.png', '.webp')) -> List[Path]:
@@ -487,6 +508,16 @@ Respond with only the angle value (0, 90, 180, or 270)."""
             processing_times = [r.processing_time for r in model_results if r.processing_time]
             mean_time = statistics.mean(processing_times) if processing_times else None
             
+            # Aggregate token usage
+            total_input_tokens = sum(r.input_tokens for r in model_results if r.input_tokens is not None)
+            total_output_tokens = sum(r.output_tokens for r in model_results if r.output_tokens is not None)
+            total_tokens = sum(r.total_tokens for r in model_results if r.total_tokens is not None)
+            
+            token_results = [r for r in model_results if r.total_tokens is not None]
+            avg_input_tokens = statistics.mean([r.input_tokens for r in token_results]) if token_results else None
+            avg_output_tokens = statistics.mean([r.output_tokens for r in token_results]) if token_results else None
+            avg_total_tokens = statistics.mean([r.total_tokens for r in token_results]) if token_results else None
+            
             summary[model_name] = OrientationTestSummary(
                 model_name=model_name,
                 total_tests=total_tests,
@@ -494,7 +525,13 @@ Respond with only the angle value (0, 90, 180, or 270)."""
                 accuracy=accuracy,
                 accuracy_by_rotation=accuracy_by_rotation,
                 consistency_score=consistency_score,
-                mean_processing_time=mean_time
+                mean_processing_time=mean_time,
+                total_input_tokens=total_input_tokens if total_input_tokens > 0 else None,
+                total_output_tokens=total_output_tokens if total_output_tokens > 0 else None,
+                total_tokens=total_tokens if total_tokens > 0 else None,
+                average_input_tokens=avg_input_tokens,
+                average_output_tokens=avg_output_tokens,
+                average_total_tokens=avg_total_tokens
             )
         
         return summary
@@ -564,7 +601,13 @@ Respond with only the angle value (0, 90, 180, or 270)."""
                     'accuracy': summary.accuracy,
                     'accuracy_by_rotation': summary.accuracy_by_rotation,
                     'consistency_score': summary.consistency_score,
-                    'mean_processing_time': summary.mean_processing_time
+                    'mean_processing_time': summary.mean_processing_time,
+                    'total_input_tokens': summary.total_input_tokens,
+                    'total_output_tokens': summary.total_output_tokens,
+                    'total_tokens': summary.total_tokens,
+                    'average_input_tokens': summary.average_input_tokens,
+                    'average_output_tokens': summary.average_output_tokens,
+                    'average_total_tokens': summary.average_total_tokens
                 }
                 for model_name, summary in report.summary.items()
             },
@@ -592,7 +635,13 @@ Respond with only the angle value (0, 90, 180, or 270)."""
                     'correct_detections': summary.correct_detections,
                     'accuracy': summary.accuracy,
                     'accuracy_by_rotation': summary.accuracy_by_rotation,
-                    'mean_processing_time': summary.mean_processing_time
+                    'mean_processing_time': summary.mean_processing_time,
+                    'total_input_tokens': summary.total_input_tokens,
+                    'total_output_tokens': summary.total_output_tokens,
+                    'total_tokens': summary.total_tokens,
+                    'average_input_tokens': summary.average_input_tokens,
+                    'average_output_tokens': summary.average_output_tokens,
+                    'average_total_tokens': summary.average_total_tokens
                 },
                 "results": [asdict(r) for r in model_results]
             }

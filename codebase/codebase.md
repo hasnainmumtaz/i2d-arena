@@ -35,6 +35,26 @@ The Image Transcriber is designed to extract text and information from images us
    - Side-by-side model performance comparison
    - Comprehensive comparison reports
 
+5. **[Orientation Test Module](orientation-test.md)**
+   - `OrientationTester` class
+   - `OrientationTestResult`, `OrientationTestSummary`, `OrientationTestReport` dataclasses
+   - Image rotation and orientation detection testing
+   - Multi-model orientation accuracy evaluation
+   - Parallel processing support
+
+6. **[Result Compilation Module](result-compilation.md)**
+   - `compile_comparison_results()` function
+   - `compile_orientation_results()` function
+   - Consolidates individual model results into summary reports
+   - Handles field normalization and data aggregation
+
+7. **[Dashboard Generation Module](dashboard-generation.md)**
+   - `generate_html()` function
+   - Interactive HTML dashboard generation
+   - Chart.js visualizations
+   - Bootstrap-based UI
+   - Comprehensive result visualization
+
 ### Architecture
 
 - **[Architecture Overview](architecture.md)**
@@ -51,6 +71,8 @@ The Image Transcriber is designed to extract text and information from images us
 - **As-is Data Extraction**: Compare performance of different models for data extraction
 - **Orientation Extraction Test**: Test model capabilities in detecting image orientation
 - **Evaluation**: Compare transcriptions with ground truth data
+- **Result Compilation**: Consolidate individual model results into summary reports
+- **Interactive Dashboard**: Generate HTML dashboard with visualizations and metrics
 - **CLI Interface**: Easy-to-use command-line interface
 
 ## File Structure
@@ -65,6 +87,11 @@ The Image Transcriber is designed to extract text and information from images us
 ├── compile_results.py         # Result compilation script
 ├── generate_dashboard.py      # Dashboard generation script
 ├── dashboard.html             # Generated results dashboard
+├── model_comparison_report.json    # Compiled comparison results
+├── orientation_test_results.json   # Compiled orientation results
+├── results/                   # Individual model results
+│   ├── comparison/           # Individual comparison results
+│   └── orientation/          # Individual orientation results
 ├── requirements.txt           # Python dependencies
 ├── README.md                  # User documentation
 └── codebase/                  # This documentation
@@ -73,6 +100,9 @@ The Image Transcriber is designed to extract text and information from images us
     ├── batch-processing.md    # Batch processing module docs
     ├── evaluation.md          # Evaluation module docs
     ├── model-comparison.md    # As-is data extraction module docs
+    ├── orientation-test.md     # Orientation test module docs
+    ├── result-compilation.md  # Result compilation module docs
+    ├── dashboard-generation.md # Dashboard generation module docs
     └── architecture.md        # Architecture overview
 ```
 
@@ -104,6 +134,29 @@ comparator = ModelComparator(images_dir="images", ground_truth_dir="gdt")
 comparison = comparator.compare_models(model_configs)
 ```
 
+### Orientation Testing
+```python
+from orientation_test import OrientationTester
+
+tester = OrientationTester(images_dir="images")
+report = tester.test_batch(model_configs, max_images=30, parallel=True)
+tester.print_summary(report)
+tester.save_results(report, "orientation_test_results.json")
+```
+
+### Result Compilation and Dashboard
+```python
+# Compile results
+from compile_results import compile_comparison_results, compile_orientation_results
+
+compile_comparison_results()
+compile_orientation_results()
+
+# Generate dashboard
+from generate_dashboard import main as generate_dashboard
+generate_dashboard()  # Creates dashboard.html
+```
+
 ## Important Notes
 
 - **Before making changes**: Always consult the relevant documentation files in this codebase folder
@@ -121,6 +174,7 @@ comparison = comparator.compare_models(model_configs)
 - `langchain-ollama` - Ollama integration
 - `python-dotenv` - Environment variable management
 - `requests` - HTTP requests (for HuggingFace)
+- `Pillow` (PIL) - Image processing (for orientation tests)
 
 ## Contributing
 

@@ -43,6 +43,39 @@ def compile_comparison_results(results_dir="results/comparison", output_file="mo
                     metrics["average_processing_time"] = data.get("processing_time", 0) / data.get("total_images", 1) if data.get("total_images", 0) > 0 else 0
                 if "overall_accuracy" not in metrics:
                     metrics["overall_accuracy"] = 0
+                
+                # Aggregate token usage from results
+                results = data.get("results", [])
+                total_input_tokens = 0
+                total_output_tokens = 0
+                total_tokens = 0
+                token_count = 0
+                
+                for result in results:
+                    input_tok = result.get("input_tokens")
+                    output_tok = result.get("output_tokens")
+                    total_tok = result.get("total_tokens")
+                    
+                    if input_tok is not None:
+                        total_input_tokens += input_tok or 0
+                        total_output_tokens += output_tok or 0
+                        total_tokens += total_tok or 0
+                        token_count += 1
+                
+                if token_count > 0:
+                    metrics["total_input_tokens"] = total_input_tokens
+                    metrics["total_output_tokens"] = total_output_tokens
+                    metrics["total_tokens"] = total_tokens
+                    metrics["average_input_tokens"] = total_input_tokens / token_count
+                    metrics["average_output_tokens"] = total_output_tokens / token_count
+                    metrics["average_total_tokens"] = total_tokens / token_count
+                else:
+                    metrics["total_input_tokens"] = None
+                    metrics["total_output_tokens"] = None
+                    metrics["total_tokens"] = None
+                    metrics["average_input_tokens"] = None
+                    metrics["average_output_tokens"] = None
+                    metrics["average_total_tokens"] = None
                     
                 report["per_model_metrics"][model_name] = metrics
 
@@ -92,7 +125,33 @@ def compile_orientation_results(results_dir="results/orientation", output_file="
             model_name = data.get("model")
             if model_name:
                 report["models_tested"].append(model_name)
-                report["summary"][model_name] = data.get("summary", {})
+                summary_data = data.get("summary", {}).copy()
+                
+                # Ensure token usage fields are present (they should be from orientation_test.py)
+                # But if not, calculate from results
+                if "total_tokens" not in summary_data or summary_data.get("total_tokens") is None:
+                    results = data.get("results", [])
+                    total_input_tokens = sum(r.get("input_tokens", 0) or 0 for r in results)
+                    total_output_tokens = sum(r.get("output_tokens", 0) or 0 for r in results)
+                    total_tokens = sum(r.get("total_tokens", 0) or 0 for r in results)
+                    
+                    token_results = [r for r in results if r.get("total_tokens") is not None]
+                    if token_results:
+                        avg_input = sum(r.get("input_tokens", 0) or 0 for r in token_results) / len(token_results)
+                        avg_output = sum(r.get("output_tokens", 0) or 0 for r in token_results) / len(token_results)
+                        avg_total = sum(r.get("total_tokens", 0) or 0 for r in token_results) / len(token_results)
+                    else:
+                        avg_input = avg_output = avg_total = None
+                    
+                    if total_tokens > 0:
+                        summary_data["total_input_tokens"] = total_input_tokens
+                        summary_data["total_output_tokens"] = total_output_tokens
+                        summary_data["total_tokens"] = total_tokens
+                        summary_data["average_input_tokens"] = avg_input
+                        summary_data["average_output_tokens"] = avg_output
+                        summary_data["average_total_tokens"] = avg_total
+                
+                report["summary"][model_name] = summary_data
                 
     # Try to set total images from one of the files
     if json_files:

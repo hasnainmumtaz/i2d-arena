@@ -383,7 +383,10 @@ class ModelComparator:
                         "ground_truth_path": r.ground_truth_path,
                         "ground_truth": r.ground_truth,
                         "processing_time": r.processing_time,
-                        "error": r.error
+                        "error": r.error,
+                        "input_tokens": r.input_tokens,
+                        "output_tokens": r.output_tokens,
+                        "total_tokens": r.total_tokens
                     }
                     for r in batch_result.results
                 ]

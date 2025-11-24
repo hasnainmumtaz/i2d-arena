@@ -21,6 +21,9 @@ class TranscriptionResult:
     extracted_data: Optional[Dict] = None  # Parsed structured data
     processing_time: Optional[float] = None
     error: Optional[str] = None
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+    total_tokens: Optional[int] = None
 
 
 @dataclass
@@ -162,13 +165,22 @@ Be precise and extract the exact values as they appear in the image."""
             
             processing_time = time.time() - start_time
             
+            # Get token usage from transcriber if available
+            token_usage = getattr(self.transcriber, 'get_last_token_usage', lambda: {})()
+            input_tokens = token_usage.get('input_tokens')
+            output_tokens = token_usage.get('output_tokens')
+            total_tokens = token_usage.get('total_tokens')
+            
             return TranscriptionResult(
                 image_path=str(image_path),
                 transcription=transcription if isinstance(transcription, str) else json.dumps(transcription, ensure_ascii=False),
                 ground_truth_path=gt_path,
                 ground_truth=ground_truth,
                 extracted_data=extracted_data,
-                processing_time=processing_time
+                processing_time=processing_time,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                total_tokens=total_tokens
             )
         except Exception as e:
             processing_time = time.time() - start_time
@@ -289,7 +301,10 @@ Be precise and extract the exact values as they appear in the image."""
                     "ground_truth_path": r.ground_truth_path,
                     "ground_truth": r.ground_truth,
                     "processing_time": r.processing_time,
-                    "error": r.error
+                    "error": r.error,
+                    "input_tokens": r.input_tokens,
+                    "output_tokens": r.output_tokens,
+                    "total_tokens": r.total_tokens
                 }
                 for r in batch_result.results
             ]

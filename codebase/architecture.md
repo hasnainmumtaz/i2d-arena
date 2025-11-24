@@ -73,6 +73,49 @@ The Image Transcriber application follows a modular architecture with clear sepa
 │                                                             │
 │  Data Classes:                                              │
 │  - ModelComparisonResult                                    │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Orientation Test Module                             │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │            OrientationTester                        │   │
+│  │  - rotate_image()                                   │   │
+│  │  - parse_orientation_response()                     │   │
+│  │  - test_single_orientation()                        │   │
+│  │  - test_batch()                                     │   │
+│  │  - save_results()                                  │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Data Classes:                                              │
+│  - OrientationTestResult                                    │
+│  - OrientationTestSummary                                   │
+│  - OrientationTestReport                                    │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Result Compilation Module                          │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │  - compile_comparison_results()                     │   │
+│  │  - compile_orientation_results()                     │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Output:                                                    │
+│  - model_comparison_report.json                             │
+│  - orientation_test_results.json                            │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│          Dashboard Generation Module                        │
+│  ┌────────────────────────────────────────────────────┐   │
+│  │  - load_json()                                      │   │
+│  │  - generate_html()                                  │   │
+│  └────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Output:                                                    │
+│  - dashboard.html (Interactive HTML dashboard)              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -89,6 +132,15 @@ image_transcriber.py
         ├── batch_processor.py
         ├── evaluator.py
         └── image_transcriber.py
+
+orientation_test.py
+  └── image_transcriber.py
+
+compile_results.py
+  └── (standalone, reads JSON files)
+
+generate_dashboard.py
+  └── compile_results.py (optional)
 ```
 
 ### Import Structure
@@ -108,6 +160,18 @@ image_transcriber.py
 - **model_comparator.py**:
   - Imports: `batch_processor`, `evaluator`, `image_transcriber`
   - Exports: `ModelComparator`, `ModelComparisonResult`
+
+- **orientation_test.py**:
+  - Imports: `image_transcriber` (for `create_transcriber`)
+  - Exports: `OrientationTester`, data classes
+
+- **compile_results.py**:
+  - Imports: None (standalone script)
+  - Exports: Compilation functions
+
+- **generate_dashboard.py**:
+  - Imports: `compile_results` (optional)
+  - Exports: Dashboard generation functions
 
 ## Data Flow
 
@@ -189,6 +253,80 @@ ModelComparator()
     └── save_comparison_results()
 ```
 
+### Orientation Test Flow
+
+```
+User Input (orientation test)
+    │
+    ▼
+OrientationTester.test_batch()
+    │
+    ├── Find image files
+    ├── For each model:
+    │   ├── create_transcriber()
+    │   ├── For each image:
+    │   │   ├── For each rotation (0°, 90°, 180°, 270°):
+    │   │   │   ├── rotate_image() (in memory)
+    │   │   │   ├── Encode to base64
+    │   │   │   ├── transcriber.transcribe()
+    │   │   │   ├── parse_orientation_response()
+    │   │   │   └── Record result
+    │   │   └── (Optional: replications)
+    │   └── Collect results
+    │
+    ├── Calculate summary statistics
+    ├── Calculate overall statistics
+    ├── print_summary()
+    └── save_results()
+        │
+        ├── Save summary: orientation_test_results.json
+        └── Save individual: results/orientation/{model}.json
+```
+
+### Result Compilation Flow
+
+```
+Individual Results (results/comparison/, results/orientation/)
+    │
+    ▼
+compile_results.py
+    │
+    ├── compile_comparison_results()
+    │   ├── Read all JSON files from results/comparison/
+    │   ├── Extract metrics per model
+    │   ├── Normalize fields
+    │   └── Save: model_comparison_report.json
+    │
+    └── compile_orientation_results()
+        ├── Read all JSON files from results/orientation/
+        ├── Extract summary per model
+        └── Save: orientation_test_results.json
+```
+
+### Dashboard Generation Flow
+
+```
+Compiled Results (JSON files)
+    │
+    ▼
+generate_dashboard.py
+    │
+    ├── (Optional) compile_results.py
+    │   └── Refresh JSON files
+    │
+    ├── load_json('model_comparison_report.json')
+    ├── load_json('orientation_test_results.json')
+    │
+    ├── generate_html()
+    │   ├── Process comparison data
+    │   ├── Process orientation data
+    │   ├── Generate HTML structure
+    │   ├── Generate Chart.js configurations
+    │   └── Embed Bootstrap UI
+    │
+    └── Save: dashboard.html
+```
+
 ## Design Patterns
 
 ### 1. Factory Pattern
@@ -235,6 +373,9 @@ ModelComparator()
 - `BatchProcessingResult`
 - `EvaluationMetrics`
 - `ModelComparisonResult`
+- `OrientationTestResult`
+- `OrientationTestSummary`
+- `OrientationTestReport`
 
 ## Component Responsibilities
 
@@ -295,6 +436,48 @@ ModelComparator()
 - Comprehensive comparison reports
 - Per-image and per-model metrics
 - Best performer identification
+
+### Orientation Test Module
+
+**Responsibilities**:
+- Image rotation in memory
+- Orientation detection testing
+- Multi-model orientation evaluation
+- Rotation-specific accuracy analysis
+
+**Key Design Decisions**:
+- In-memory rotation (no disk writes)
+- Parallel processing support
+- Robust response parsing
+- Comprehensive statistics
+
+### Result Compilation Module
+
+**Responsibilities**:
+- Consolidate individual results
+- Field normalization
+- Summary report generation
+- Data aggregation
+
+**Key Design Decisions**:
+- Standalone script (no dependencies)
+- Handles missing fields gracefully
+- Idempotent operations
+- Flexible directory structure
+
+### Dashboard Generation Module
+
+**Responsibilities**:
+- HTML dashboard generation
+- Data visualization
+- Interactive charts
+- Result presentation
+
+**Key Design Decisions**:
+- Bootstrap-based UI
+- Chart.js for visualizations
+- Self-contained HTML output
+- Optional result compilation
 
 ## Error Handling Strategy
 

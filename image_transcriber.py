@@ -75,7 +75,43 @@ class ImageTranscriber:
         
         # Invoke model
         response = self.model.invoke([message])
+        # Store token usage in instance for retrieval
+        self._last_token_usage = self._extract_token_usage(response)
         return response.content
+    
+    def _extract_token_usage(self, response) -> Dict:
+        """Extract token usage from LangChain response"""
+        token_usage = {
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None
+        }
+        
+        # Try to get token usage from response metadata
+        if hasattr(response, 'response_metadata'):
+            metadata = response.response_metadata or {}
+            # OpenAI format
+            if 'token_usage' in metadata:
+                usage = metadata['token_usage']
+                token_usage["input_tokens"] = usage.get('prompt_tokens') or usage.get('input_tokens')
+                token_usage["output_tokens"] = usage.get('completion_tokens') or usage.get('output_tokens')
+                token_usage["total_tokens"] = usage.get('total_tokens')
+            # Anthropic format
+            elif 'usage' in metadata:
+                usage = metadata['usage']
+                token_usage["input_tokens"] = usage.get('input_tokens')
+                token_usage["output_tokens"] = usage.get('output_tokens')
+                token_usage["total_tokens"] = usage.get('total_tokens')
+        
+        return token_usage
+    
+    def get_last_token_usage(self) -> Dict:
+        """Get token usage from the last transcription"""
+        return getattr(self, '_last_token_usage', {
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None
+        })
 
 
 class OpenAITranscriber(ImageTranscriber):
@@ -266,6 +302,16 @@ Be precise and extract the exact values as they appear in the image. If a field 
                         ) from api_error
                     raise
                 
+                # Store token usage
+                if hasattr(response, 'usage') and response.usage:
+                    self._last_token_usage = {
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else None,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
+                        "total_tokens": response.usage.total_tokens if hasattr(response.usage, 'total_tokens') else None
+                    }
+                else:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
                 result = json.loads(response.choices[0].message.content)
                 return result
             except Exception as e:
@@ -278,6 +324,8 @@ Be precise and extract the exact values as they appear in the image. If a field 
                         ]
                     )
                     response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
                     # Try to parse JSON from response
                     content = response.content
                     # Extract JSON from markdown code blocks if present
@@ -301,6 +349,8 @@ Be precise and extract the exact values as they appear in the image. If a field 
                 ]
             )
             response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
             return response.content
 
 
