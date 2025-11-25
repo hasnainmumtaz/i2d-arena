@@ -214,115 +214,92 @@ def generate_html(comparison_data, orientation_data):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>i2d Arena</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>🎯 i2d Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        :root {{
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            --info-gradient: linear-gradient(135deg, #3494E6 0%, #EC6EAD 100%);
-            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }}
         
         body {{ 
-            background: linear-gradient(to bottom, #f5f7fa 0%, #c3cfe2 100%);
+            background: #fafafa;
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            color: #1a1a1a;
+            line-height: 1.6;
         }}
         
         .navbar {{
-            background: var(--primary-gradient) !important;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e5;
+            backdrop-filter: blur(10px);
         }}
         
         .card {{ 
-            margin-bottom: 20px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            border: none;
-            border-radius: 12px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: #ffffff;
+            margin-bottom: 1.5rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            transition: box-shadow 0.2s ease;
             overflow: hidden;
         }}
         
         .card:hover {{
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }}
         
         .card-header {{
-            background: var(--primary-gradient);
-            color: white;
+            background: #ffffff;
+            color: #1a1a1a;
             font-weight: 600;
-            border: none;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 1.25rem 1.5rem;
+            font-size: 0.95rem;
         }}
         
         .metric-card {{
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 2rem 1.5rem;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }}
-        
-        .metric-card::before {{
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--primary-gradient);
+            border: 1px solid #e5e5e5;
         }}
         
         .metric-value {{ 
-            font-size: 2.5rem; 
-            font-weight: bold;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 0.5rem 0;
+            font-size: 2.25rem; 
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0.75rem 0;
+            letter-spacing: -0.02em;
         }}
         
         .metric-label {{ 
-            color: #6c757d;
-            font-size: 0.9rem;
+            color: #6b7280;
+            font-size: 0.875rem;
             font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            text-transform: none;
+            letter-spacing: 0;
         }}
         
-        .nav-tabs {{
-            border-bottom: 2px solid #e9ecef;
+        .tab-button {{
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            color: #6b7280;
         }}
         
-        .nav-tabs .nav-link {{
-            border: none;
-            color: #6c757d;
-            font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
+        .tab-button:hover {{
+            color: #1a1a1a;
+            background-color: transparent;
         }}
         
-        .nav-tabs .nav-link:hover {{
-            color: #667eea;
-            background-color: #f8f9fa;
-        }}
-        
-        .nav-tabs .nav-link.active {{
-            color: #667eea;
-            font-weight: bold;
-            border-bottom: 3px solid #667eea;
-            background: transparent;
-        }}
-        
-        .badge {{
-            font-size: 0.9rem;
-            padding: 0.5rem 1rem;
-            font-weight: 600;
+        .tab-button.active {{
+            border-bottom-color: #1a1a1a;
+            color: #1a1a1a;
         }}
         
         .table {{
@@ -330,276 +307,200 @@ def generate_html(comparison_data, orientation_data):
             overflow: hidden;
         }}
         
-        .table thead {{
-            background: var(--primary-gradient);
-            color: white;
-        }}
-        
-        .table tbody tr {{
-            transition: background-color 0.2s ease;
-        }}
-        
-        .table tbody tr:hover {{
-            background-color: #f8f9fa;
-            cursor: pointer;
-        }}
-        
-        .progress {{
-            height: 8px;
-            border-radius: 10px;
-            background-color: #e9ecef;
-        }}
-        
-        .progress-bar {{
-            border-radius: 10px;
-        }}
-        
         .search-box {{
             position: relative;
-            margin-bottom: 1rem;
-        }}
-        
-        .search-box input {{
-            padding-left: 2.5rem;
-            border-radius: 8px;
-            border: 2px solid #e9ecef;
-            transition: border-color 0.3s ease;
-        }}
-        
-        .search-box input:focus {{
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }}
-        
-        .search-box i {{
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }}
-        
-        .field-accuracy-card {{
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }}
-        
-        .field-name {{
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.5rem;
-            text-transform: capitalize;
         }}
         
         .sortable {{
             cursor: pointer;
             user-select: none;
+            transition: background-color 0.15s ease;
         }}
         
         .sortable:hover {{
-            background-color: rgba(102, 126, 234, 0.1);
+            background-color: rgba(0,0,0,0.02);
         }}
         
         .sort-icon {{
             margin-left: 0.5rem;
-            opacity: 0.5;
-        }}
-        
-        .best-performer {{
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            opacity: 0.4;
             font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
         }}
         
         .rank-badge {{
-            font-size: 0.9rem;
-            font-weight: 700;
-            padding: 0.4rem 0.8rem;
-            min-width: 2.5rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            padding: 0.375rem 0.75rem;
+            min-width: 2.25rem;
             text-align: center;
-            border-radius: 6px;
+            border-radius: 4px;
         }}
         
         .rank-1 {{
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-            color: #000 !important;
+            background: #fef3c7 !important;
+            color: #92400e !important;
         }}
         
         .rank-2 {{
-            background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%) !important;
-            color: #000 !important;
+            background: #e5e7eb !important;
+            color: #374151 !important;
         }}
         
         .rank-3 {{
-            background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%) !important;
-            color: #fff !important;
+            background: #fde68a !important;
+            color: #78350f !important;
         }}
         
         .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) {{
-            background: #6c757d !important;
-            color: #fff !important;
+            background: #f3f4f6 !important;
+            color: #6b7280 !important;
         }}
         
         @media print {{
-            .card {{ box-shadow: none; }}
+            .card {{ box-shadow: none; border: 1px solid #e5e5e5; }}
             .navbar {{ display: none; }}
         }}
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand mb-0 h1">
-                <i class="bi bi-graph-up-arrow"></i> i2d Arena
-            </span>
-            <span class="text-light small">
-                <i class="bi bi-clock"></i> Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
-            </span>
+    <nav class="navbar mb-12">
+        <div class="container mx-auto px-6 py-5">
+            <div class="flex justify-between items-center">
+                <span class="text-xl font-semibold text-gray-900">
+                    🎯i2d Arena
+                </span>
+                <a href="https://github.com/hasnainmumtaz/i2d-arena" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm">GitHub</span>
+                </a>
+            </div>
         </div>
     </nav>
 
-    <div class="container">
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+    <div class="container mx-auto px-6 max-w-7xl">
+        <ul class="flex border-b border-gray-200 mb-12" id="myTab" role="tablist">
+            <li class="mr-1" role="presentation">
+                <button class="tab-button active px-5 py-3 text-sm font-medium bg-transparent" id="overview-tab" onclick="switchTab('overview')" type="button" role="tab">Overview</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button" role="tab">As-is Data Extraction</button>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="comparison-tab" onclick="switchTab('comparison')" type="button" role="tab">As-is Data Extraction</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="orientation-tab" data-bs-toggle="tab" data-bs-target="#orientation" type="button" role="tab">Orientation Extraction Test</button>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="orientation-tab" onclick="switchTab('orientation')" type="button" role="tab">Orientation Extraction Test</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="methodology-tab" data-bs-toggle="tab" data-bs-target="#methodology" type="button" role="tab">Methodology</button>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="methodology-tab" onclick="switchTab('methodology')" type="button" role="tab">Methodology</button>
             </li>
         </ul>
 
-        <div class="tab-content" id="myTabContent">
+        <div id="myTabContent">
             <!-- Overview Tab -->
-            <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card metric-card">
-                            <div class="metric-label"><i class="bi bi-cpu"></i> Models Compared</div>
-                            <div class="metric-value">{len(models)}</div>
-                        </div>
+            <div class="tab-pane active" id="overview" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                    <div class="metric-card">
+                        <div class="metric-label">Models Compared</div>
+                        <div class="metric-value">{len(models)}</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card metric-card">
-                            <div class="metric-label"><i class="bi bi-image"></i> Total Images (Extraction)</div>
-                            <div class="metric-value">{comparison_data.get('summary', {}).get('total_images', 'N/A') if comparison_data else 'N/A'}</div>
-                        </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Images (Extraction)</div>
+                        <div class="metric-value">{comparison_data.get('summary', {}).get('total_images', 'N/A') if comparison_data else 'N/A'}</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card metric-card">
-                            <div class="metric-label"><i class="bi bi-arrow-repeat"></i> Orientation Tests</div>
-                            <div class="metric-value">{orientation_data.get('total_images', 'N/A') if orientation_data else 'N/A'}</div>
-                        </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Orientation Tests</div>
+                        <div class="metric-value">{orientation_data.get('total_images', 'N/A') if orientation_data else 'N/A'}</div>
                     </div>
                 </div>
                 
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">Best Performers (Extraction)</div>
-                            <div class="card-body">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-trophy-fill text-warning"></i> Highest Accuracy
-                                            <div class="text-muted small">{best_acc_model}</div>
-                                        </div>
-                                        <span class="badge bg-primary rounded-pill">{f"{best_acc_val:.1f}%" if models else "N/A"}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-lightning-fill text-warning"></i> Fastest Processing
-                                            <div class="text-muted small">{fastest_model}</div>
-                                        </div>
-                                        <span class="badge bg-success rounded-pill">{f"{fastest_val:.2f}s" if models else "N/A"}</span>
-                                    </li>
-                                </ul>
-                            </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="card">
+                        <div class="card-header">Best Performers (Extraction)</div>
+                        <div class="p-6">
+                            <ul class="divide-y divide-gray-100">
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Highest Accuracy</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(best_acc_model) if models else ''}<span>{best_acc_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{best_acc_val:.1f}%" if models else "N/A"}</span>
+                                </li>
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Fastest Processing</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(fastest_model) if models else ''}<span>{fastest_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{fastest_val:.2f}s" if models else "N/A"}</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">Best Performers (Orientation)</div>
-                            <div class="card-body">
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-trophy-fill text-warning"></i> Highest Accuracy
-                                            <div class="text-muted small">{best_orient_model}</div>
-                                        </div>
-                                        <span class="badge bg-primary rounded-pill">{f"{best_orient_val:.1f}%" if orientation_models else "N/A"}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-lightning-fill text-warning"></i> Fastest Processing
-                                            <div class="text-muted small">{fastest_orient_model}</div>
-                                        </div>
-                                        <span class="badge bg-success rounded-pill">{f"{fastest_orient_val:.2f}s" if orientation_models else "N/A"}</span>
-                                    </li>
-                                </ul>
-                            </div>
+                    <div class="card">
+                        <div class="card-header">Best Performers (Orientation)</div>
+                        <div class="p-6">
+                            <ul class="divide-y divide-gray-100">
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Highest Accuracy</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(best_orient_model) if orientation_models else ''}<span>{best_orient_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{best_orient_val:.1f}%" if orientation_models else "N/A"}</span>
+                                </li>
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Fastest Processing</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(fastest_orient_model) if orientation_models else ''}<span>{fastest_orient_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{fastest_orient_val:.2f}s" if orientation_models else "N/A"}</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- As-is Data Extraction Tab -->
-            <div class="tab-pane fade" id="comparison" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Model Accuracy Comparison</h5>
-                                <canvas id="comparisonChart"></canvas>
-                            </div>
+            <div class="tab-pane hidden" id="comparison" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Model Accuracy Comparison</h5>
+                            <canvas id="comparisonChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Processing Time (avg)</h5>
-                                <canvas id="timeChart"></canvas>
-                            </div>
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Processing Time (avg)</h5>
+                            <canvas id="timeChart"></canvas>
                         </div>
                     </div>
                 </div>
                 
-                <div class="card mt-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-table"></i> Detailed Metrics</span>
-                        <button class="btn btn-sm btn-light" onclick="exportTable('comparisonTable', 'comparison_metrics.csv')">
-                            <i class="bi bi-download"></i> Export CSV
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <span class="text-gray-900">Detailed Metrics</span>
+                        <button class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded text-sm font-medium transition-colors border border-gray-200" onclick="exportTable('comparisonTable', 'comparison_metrics.csv')">
+                            Export CSV
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div class="search-box">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control" id="comparisonSearch" placeholder="Search models..." onkeyup="filterTable('comparisonTable', 'comparisonSearch')">
+                    <div class="p-6">
+                        <div class="search-box mb-4">
+                            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 bg-white" id="comparisonSearch" placeholder="Search models..." onkeyup="filterTable('comparisonTable', 'comparisonSearch')">
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="comparisonTable">
-                                <thead>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table" id="comparisonTable">
+                                <thead class="bg-gray-50 text-gray-900">
                                     <tr>
-                                        <th class="sortable" onclick="sortTable('comparisonTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('comparisonTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('comparisonTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('comparisonTable', 3)">Avg Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('comparisonTable', 4)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 3)">Avg Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 4)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {''.join(f'<tr><td><span class="badge rank-badge rank-{comparison_rankings.get(m, 0)}">{comparison_rankings.get(m, 0)}</span></td><td>{get_provider_logo(m)}{m}</td><td><div class="progress mb-1"><div class="progress-bar bg-primary" style="width: {a}%"></div></div> {a:.1f}%</td><td>{t:.2f}</td><td>{int(avg_tok) if avg_tok else "N/A"}</td></tr>' for m, a, t, avg_tok in zip(models, accuracies, avg_times, avg_tokens)) if comparison_data else ''}
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    {''.join(f'<tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-{comparison_rankings.get(m, 0)}">{comparison_rankings.get(m, 0)}</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{get_provider_logo(m)}{m}</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: {a}%"></div></div> <span class="text-gray-700">{a:.1f}%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{t:.2f}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{int(avg_tok) if avg_tok else "N/A"}</td></tr>' for m, a, t, avg_tok in zip(models, accuracies, avg_times, avg_tokens)) if comparison_data else ''}
                                 </tbody>
                             </table>
                         </div>
@@ -608,52 +509,48 @@ def generate_html(comparison_data, orientation_data):
             </div>
 
             <!-- Orientation Extraction Test Tab -->
-            <div class="tab-pane fade" id="orientation" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Overall Accuracy</h5>
-                                <canvas id="orientationChart"></canvas>
-                            </div>
+            <div class="tab-pane hidden" id="orientation" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Overall Accuracy</h5>
+                            <canvas id="orientationChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Accuracy by Rotation</h5>
-                                <canvas id="rotationChart"></canvas>
-                            </div>
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Accuracy by Rotation</h5>
+                            <canvas id="rotationChart"></canvas>
                         </div>
                     </div>
                 </div>
                 
-                <div class="card mt-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-table"></i> Detailed Orientation Results</span>
-                        <button class="btn btn-sm btn-light" onclick="exportTable('orientationTable', 'orientation_metrics.csv')">
-                            <i class="bi bi-download"></i> Export CSV
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <span class="text-gray-900">Detailed Orientation Results</span>
+                        <button class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded text-sm font-medium transition-colors border border-gray-200" onclick="exportTable('orientationTable', 'orientation_metrics.csv')">
+                            Export CSV
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div class="search-box">
-                            <i class="bi bi-search"></i>
-                            <input type="text" class="form-control" id="orientationSearch" placeholder="Search models..." onkeyup="filterTable('orientationTable', 'orientationSearch')">
+                    <div class="p-6">
+                        <div class="search-box mb-4">
+                            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 bg-white" id="orientationSearch" placeholder="Search models..." onkeyup="filterTable('orientationTable', 'orientationSearch')">
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="orientationTable">
-                                <thead>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table" id="orientationTable">
+                                <thead class="bg-gray-50 text-gray-900">
                                     <tr>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 3)">Correct/Total <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 4)">Mean Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
-                                        <th class="sortable" onclick="sortTable('orientationTable', 5)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 3)">Correct/Total <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 4)">Mean Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 5)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {''.join(f'<tr><td><span class="badge rank-badge rank-{orientation_rankings.get(m, 0)}">{orientation_rankings.get(m, 0)}</span></td><td>{get_provider_logo(m)}{m}</td><td><div class="progress mb-1"><div class="progress-bar bg-primary" style="width: {orientation_data.get("summary", {}).get(m, {}).get("accuracy", 0)*100}%"></div></div> {orientation_data.get("summary", {}).get(m, {}).get("accuracy", 0)*100:.1f}%</td><td>{orientation_data.get("summary", {}).get(m, {}).get("correct_detections", 0)}/{orientation_data.get("summary", {}).get(m, {}).get("total_tests", 0)}</td><td>{orientation_data.get("summary", {}).get(m, {}).get("mean_processing_time", 0):.2f}</td><td>{int(avg_tok) if avg_tok else "N/A"}</td></tr>' for m, avg_tok in zip(orientation_models, orientation_avg_tokens)) if orientation_data and orientation_models else ''}
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    {''.join(f'<tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-{orientation_rankings.get(m, 0)}">{orientation_rankings.get(m, 0)}</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{get_provider_logo(m)}{m}</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: {orientation_data.get("summary", {}).get(m, {}).get("accuracy", 0)*100}%"></div></div> <span class="text-gray-700">{orientation_data.get("summary", {}).get(m, {}).get("accuracy", 0)*100:.1f}%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{orientation_data.get("summary", {}).get(m, {}).get("correct_detections", 0)}/{orientation_data.get("summary", {}).get(m, {}).get("total_tests", 0)}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{orientation_data.get("summary", {}).get(m, {}).get("mean_processing_time", 0):.2f}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{int(avg_tok) if avg_tok else "N/A"}</td></tr>' for m, avg_tok in zip(orientation_models, orientation_avg_tokens)) if orientation_data and orientation_models else ''}
                                 </tbody>
                             </table>
                         </div>
@@ -662,101 +559,179 @@ def generate_html(comparison_data, orientation_data):
             </div>
 
             <!-- Methodology Tab -->
-            <div class="tab-pane fade" id="methodology" role="tabpanel">
+            <div class="tab-pane hidden" id="methodology" role="tabpanel">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Testing Methodology</h4>
+                        <h4 class="text-base font-semibold text-gray-900">Testing Methodology</h4>
                     </div>
-                    <div class="card-body">
-                        <h5>Overview</h5>
-                        <p>The i2d-arena is designed to comprehensively evaluate the capabilities of Large Language Models (LLMs) in extracting structured data from images, particularly invoices and receipts. We employ two complementary testing approaches:</p>
+                    <div class="p-6">
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Overview</h5>
+                        <p class="mb-6 text-gray-700 leading-relaxed">The i2d Arena is a comprehensive benchmarking platform designed to evaluate the capabilities of Large Language Models (LLMs) with vision capabilities in extracting structured data from document images, particularly invoices and receipts. The platform employs two complementary testing methodologies to assess different aspects of model performance.</p>
                         
-                        <hr class="my-4">
+                        <hr class="my-8 border-gray-200">
                         
-                        <h5>1. As-is Data Extraction Test</h5>
-                        <p><strong>Purpose:</strong> Evaluate how accurately models can extract structured information from images in their original orientation.</p>
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">1. As-is Data Extraction Test</h5>
                         
-                        <h6>Process:</h6>
-                        <ul>
-                            <li>Each model processes the same set of invoice/receipt images</li>
-                            <li>Images are presented in their original, unmodified state</li>
-                            <li>Models extract four key fields: company name, date, address, and total amount</li>
-                            <li>Results are compared against manually verified ground truth data</li>
+                        <p class="mb-4 text-gray-700 leading-relaxed"><strong>Description:</strong> This test evaluates how accurately LLM models can extract structured information from document images in their original, unmodified orientation. The test simulates real-world scenarios where documents are scanned or photographed in their natural orientation and need to be processed for data extraction.</p>
+                        
+                        <p class="mb-3 text-gray-700"><strong>Purpose:</strong> Assess the baseline performance of models in extracting structured data from properly oriented documents, which represents the most common use case in production environments.</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Test Process:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li>Each model processes the same set of invoice and receipt images</li>
+                            <li>Images are presented in their original, unmodified state (no rotations or transformations)</li>
+                            <li>Models are prompted to extract four key structured fields from each image:
+                                <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                                    <li><strong>Company Name:</strong> The name of the business or vendor</li>
+                                    <li><strong>Date:</strong> The transaction or invoice date</li>
+                                    <li><strong>Address:</strong> The business address or location</li>
+                                    <li><strong>Total Amount:</strong> The total monetary value of the transaction</li>
+                                </ul>
+                            </li>
+                            <li>Models return structured JSON responses with the extracted fields</li>
+                            <li>Results are compared against manually verified ground truth data for accuracy assessment</li>
+                            <li>All models are tested using identical prompts and parameters to ensure fair comparison</li>
                         </ul>
                         
-                        <h6>Evaluation Metrics:</h6>
-                        <ul>
-                            <li><strong>Success Rate:</strong> Percentage of images successfully processed without errors</li>
-                            <li><strong>Overall Accuracy:</strong> Percentage of correctly extracted fields across all images</li>
-                            <li><strong>Field-level Accuracy:</strong> Individual accuracy for company, date, address, and total fields</li>
-                            <li><strong>Processing Time:</strong> Average time taken to process each image</li>
-                            <li><strong>Failed Transcriptions:</strong> Count of images that could not be processed</li>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Evaluation Metrics:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Overall Accuracy:</strong> Percentage of correctly extracted fields across all images and all fields. Calculated as (Total correct fields) / (Total fields × Total images)</li>
+                            <li><strong>Field-level Accuracy:</strong> Individual accuracy scores for each of the four fields (company, date, address, total), allowing identification of which fields are most challenging for each model</li>
+                            <li><strong>Exact Match Rate:</strong> Percentage of fields that match the ground truth exactly (case-insensitive, after normalization)</li>
+                            <li><strong>Partial Match Rate:</strong> Percentage of fields that partially match (e.g., 70%+ word overlap for text, matching numeric values for dates/totals)</li>
+                            <li><strong>Average Processing Time:</strong> Mean time taken to process each image, measured in seconds</li>
+                            <li><strong>Token Usage:</strong> Average number of tokens consumed per image (input, output, and total tokens) for cost and efficiency analysis</li>
                         </ul>
                         
-                        <hr class="my-4">
-                        
-                        <h5>2. Orientation Extraction Test</h5>
-                        <p><strong>Purpose:</strong> Assess models' robustness in handling images at different rotations, simulating real-world scenarios where documents may be scanned or photographed at various angles.</p>
-                        
-                        <h6>Process:</h6>
-                        <ul>
-                            <li>Each image is systematically rotated to four orientations: 0°, 90°, 180°, and 270°</li>
-                            <li>Models process all rotated versions of each image</li>
-                            <li>Optional: Multiple replications per rotation to assess consistency</li>
-                            <li>Parallel processing support for faster execution</li>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Matching Logic:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Text Fields (Company, Address):</strong> Case-insensitive comparison with whitespace normalization. Partial matches are scored when ≥70% word overlap is detected</li>
+                            <li><strong>Date Fields:</strong> Numeric components are extracted and compared, allowing for format variations (e.g., "01/15/2024" vs "2024-01-15")</li>
+                            <li><strong>Total Fields:</strong> Numeric values are extracted and compared, ignoring currency symbols and formatting differences</li>
+                            <li>Each field is scored as: Exact match (1.0), Partial match (0.7), or No match (0.0)</li>
                         </ul>
                         
-                        <h6>Evaluation Metrics:</h6>
-                        <ul>
-                            <li><strong>Overall Accuracy:</strong> Percentage of correct orientation detections across all tests</li>
-                            <li><strong>Accuracy by Rotation:</strong> Performance breakdown for each rotation angle (0°, 90°, 180°, 270°)</li>
-                            <li><strong>Correct/Total Tests:</strong> Number of successful detections out of total tests performed</li>
-                            <li><strong>Mean Processing Time:</strong> Average time per orientation test</li>
-                            <li><strong>Consistency:</strong> Variation in performance across replications (if applicable)</li>
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">2. Orientation Extraction Test</h5>
+                        
+                        <p class="mb-4 text-gray-700 leading-relaxed"><strong>Description:</strong> This test evaluates how accurately LLM models can detect the rotation angle of document images. Each test image is systematically rotated to four different orientations (0°, 90°, 180°, 270°) and the model must identify the correct rotation angle. This test assesses the model's spatial reasoning and ability to understand image orientation, which is critical for handling documents that may be scanned or photographed at various angles.</p>
+                        
+                        <p class="mb-3 text-gray-700"><strong>Purpose:</strong> Evaluate model robustness in handling rotated images and assess their ability to detect and potentially correct for orientation issues, which is essential for real-world document processing pipelines where documents may not always be properly oriented.</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Test Process:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li>Each test image is systematically rotated to four orientations: 0° (upright), 90° (rotated clockwise), 180° (upside down), and 270° (rotated counter-clockwise)</li>
+                            <li>For each image, models process all four rotated versions</li>
+                            <li>Models are prompted to identify the rotation angle and respond with one of: 0, 90, 180, or 270 degrees</li>
+                            <li>The model's response is parsed to extract the detected rotation angle (handling various response formats like "0 degrees", "upright", "0°", etc.)</li>
+                            <li>Each detection is marked as correct or incorrect based on whether it matches the actual rotation applied</li>
+                            <li>Optional: Multiple replications per rotation can be performed to assess consistency and account for non-deterministic model outputs</li>
+                            <li>Parallel processing is supported for faster execution when testing multiple models</li>
                         </ul>
                         
-                        <hr class="my-4">
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Evaluation Metrics:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Overall Accuracy:</strong> Percentage of correct orientation detections across all tests (all images × all rotations × replications)</li>
+                            <li><strong>Accuracy by Rotation:</strong> Performance breakdown for each rotation angle (0°, 90°, 180°, 270°), revealing which orientations are most challenging for each model</li>
+                            <li><strong>Correct/Total Tests:</strong> Raw count of successful detections out of total tests performed, providing absolute performance numbers</li>
+                            <li><strong>Mean Processing Time:</strong> Average time per orientation test, measured in seconds</li>
+                            <li><strong>Token Usage:</strong> Average number of tokens consumed per orientation test for cost analysis</li>
+                            <li><strong>Consistency Score:</strong> When multiple replications are performed, this measures the variation in performance across replications, indicating model stability</li>
+                        </ul>
                         
-                        <h5>Data Structure</h5>
-                        <h6>Ground Truth Format:</h6>
-                        <p>Each image has a corresponding JSON file with the following structure:</p>
-                        <pre class="bg-light p-3 rounded"><code>{{
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Response Parsing:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>The system uses flexible parsing to extract rotation angles from various response formats</li>
+                            <li>Accepts numeric values (0, 90, 180, 270), degree symbols (0°, 90°, etc.), and descriptive terms (upright, clockwise, upside down, counter-clockwise)</li>
+                            <li>Handles edge cases like 360° being normalized to 0°</li>
+                            <li>Invalid or unparseable responses are marked as incorrect</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Data Structure & Ground Truth</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Ground Truth Format:</h6>
+                        <p class="mb-2 text-gray-700">For the As-is Data Extraction Test, each image has a corresponding JSON file in the ground truth directory with the following structure:</p>
+                        <pre class="bg-gray-50 border border-gray-200 p-4 rounded mb-4 overflow-x-auto text-sm text-gray-800"><code>{{
   "company": "Company Name",
   "date": "DD/MM/YYYY",
   "address": "Full Address",
   "total": "Amount"
 }}</code></pre>
+                        <p class="mb-4 text-gray-700 text-sm">The ground truth files are manually verified to ensure accuracy. For the Orientation Extraction Test, the ground truth is the known rotation angle applied to each image (0°, 90°, 180°, or 270°).</p>
                         
-                        <h6>Supported Image Formats:</h6>
-                        <ul>
-                            <li>JPEG/JPG - Standard photo format</li>
-                            <li>PNG - Lossless image format</li>
-                            <li>WebP - Modern web image format</li>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Supported Image Formats:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>JPEG/JPG:</strong> Standard photo format, most common for scanned documents</li>
+                            <li><strong>PNG:</strong> Lossless image format, preserves quality but larger file sizes</li>
+                            <li><strong>WebP:</strong> Modern web image format with good compression</li>
                         </ul>
                         
-                        <hr class="my-4">
+                        <hr class="my-8 border-gray-200">
                         
-                        <h5>Model Configuration</h5>
-                        <p>Models are tested using the LangChain framework with consistent parameters:</p>
-                        <ul>
-                            <li><strong>Providers Supported:</strong> OpenAI, Anthropic (Claude), Google (Gemini), Ollama (local), HuggingFace</li>
-                            <li><strong>Structured Output:</strong> JSON schema enforcement for consistent data extraction</li>
-                            <li><strong>Prompt Engineering:</strong> Standardized prompts across all models for fair comparison</li>
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Technical Implementation</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Framework & Infrastructure:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li><strong>LangChain Integration:</strong> All models are tested using the LangChain framework, ensuring consistent API interfaces and error handling</li>
+                            <li><strong>Structured Output:</strong> For data extraction tests, JSON schema enforcement ensures models return data in the expected format</li>
+                            <li><strong>Parallel Processing:</strong> Both tests support parallel execution for faster completion when testing multiple models or images</li>
+                            <li><strong>Token Tracking:</strong> All API calls track token usage (input, output, and total) for cost analysis and efficiency monitoring</li>
                         </ul>
                         
-                        <hr class="my-4">
-                        
-                        <h5>Accuracy Calculation</h5>
-                        <p>Field-level accuracy is calculated using exact string matching after normalization:</p>
-                        <ul>
-                            <li>Whitespace normalization (leading/trailing removal, multiple spaces collapsed)</li>
-                            <li>Case-insensitive comparison</li>
-                            <li>Each field is scored as either correct (1) or incorrect (0)</li>
-                            <li>Overall accuracy = (Total correct fields) / (Total fields × Total images)</li>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Supported LLM Providers:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>OpenAI:</strong> GPT-4o, GPT-4o-mini, GPT-4 Turbo, and other vision-capable models</li>
+                            <li><strong>Anthropic:</strong> Claude 3.5 Sonnet, Claude 3 Opus, and other Claude models with vision</li>
+                            <li><strong>Google:</strong> Gemini Pro, Gemini Ultra, and other Gemini models</li>
+                            <li><strong>Ollama:</strong> Local models like LLaVA for on-premise testing</li>
+                            <li><strong>HuggingFace:</strong> Open-source vision-language models via API</li>
                         </ul>
                         
-                        <div class="alert alert-info mt-4">
-                            <strong>Note:</strong> All tests are designed to be reproducible. Results may vary slightly due to the non-deterministic nature of LLM outputs, especially when temperature > 0.
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Prompt Engineering:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Standardized prompts are used across all models to ensure fair comparison</li>
+                            <li>Prompts are optimized for structured output and clear instructions</li>
+                            <li>For orientation tests, prompts explicitly request numeric angle responses (0, 90, 180, 270)</li>
+                            <li>For data extraction, prompts specify the four required fields and JSON format</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Accuracy Calculation & Scoring</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">As-is Data Extraction Scoring:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li><strong>Text Normalization:</strong> All text is normalized before comparison (whitespace removal, case-insensitive)</li>
+                            <li><strong>Exact Match:</strong> Field matches ground truth exactly after normalization (score: 1.0)</li>
+                            <li><strong>Partial Match:</strong> Field has ≥70% word overlap for text, or matching numeric values for dates/totals (score: 0.7)</li>
+                            <li><strong>No Match:</strong> Field does not match (score: 0.0)</li>
+                            <li><strong>Field Accuracy:</strong> Average score for each field across all images</li>
+                            <li><strong>Overall Accuracy:</strong> Average of all field scores across all images = (Sum of all field scores) / (Number of fields × Number of images)</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Orientation Extraction Scoring:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Each test is binary: correct (1) or incorrect (0)</li>
+                            <li>Accuracy = (Number of correct detections) / (Total number of tests)</li>
+                            <li>Accuracy is calculated overall and separately for each rotation angle</li>
+                            <li>When replications are used, consistency is measured as the standard deviation of accuracy across replications</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Test Execution & Results</h5>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Tests can be run individually or in batch mode for multiple models</li>
+                            <li>Results are saved in JSON format with detailed metrics for each model</li>
+                            <li>Individual test results include processing times, token usage, and error information</li>
+                            <li>Summary statistics are calculated automatically and included in reports</li>
+                            <li>Results can be compiled across multiple test runs to generate aggregate statistics</li>
+                        </ul>
+                        
+                        <div class="bg-gray-50 border-l-2 border-gray-400 p-4 mt-6">
+                            <p class="text-gray-700 text-sm"><strong>Note on Reproducibility:</strong> All tests are designed to be reproducible. However, results may vary slightly between runs due to the non-deterministic nature of LLM outputs, especially when temperature > 0. For more consistent results, consider using temperature=0 or running multiple replications and averaging the results.</p>
                         </div>
                     </div>
                 </div>
@@ -764,8 +739,36 @@ def generate_html(comparison_data, orientation_data):
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Tab switching function
+        function switchTab(tabName) {{
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {{
+                pane.classList.add('hidden');
+                pane.classList.remove('active');
+            }});
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {{
+                btn.classList.remove('active', 'text-indigo-600', 'border-indigo-600');
+                btn.classList.add('text-gray-600');
+            }});
+            
+            // Show selected tab pane
+            const selectedPane = document.getElementById(tabName);
+            if (selectedPane) {{
+                selectedPane.classList.remove('hidden');
+                selectedPane.classList.add('active');
+            }}
+            
+            // Add active class to selected tab button
+            const selectedButton = document.getElementById(tabName + '-tab');
+            if (selectedButton) {{
+                selectedButton.classList.add('active');
+                selectedButton.classList.remove('text-gray-600');
+            }}
+        }}
+        
         // Enhanced chart configurations (defined first)
         const chartOptions = {{
             responsive: true,
@@ -912,7 +915,7 @@ def generate_html(comparison_data, orientation_data):
                  }}
              }});
          }}
-         
+
         // Orientation Chart
         const ctxOrient = document.getElementById('orientationChart').getContext('2d');
         const orientationChart = new Chart(ctxOrient, {{
@@ -1126,6 +1129,18 @@ def generate_html(comparison_data, orientation_data):
             }}
         }});
     </script>
+    
+    <footer class="mt-16 py-8 border-t border-gray-200 bg-white">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-gray-500">
+                <span>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
+                <span class="hidden md:inline">•</span>
+                <span>
+                    Contact: <a href="mailto:naqvi@uni.minerva.edu" class="text-gray-700 hover:text-gray-900 underline transition-colors">naqvi@uni.minerva.edu</a>
+                </span>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
 """
@@ -1153,7 +1168,7 @@ def main():
     html = generate_html(comparison_data, orientation_data)
     
     # Save HTML
-    output_file = 'dashboard.html'
+    output_file = 'index.html'
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(html)
     

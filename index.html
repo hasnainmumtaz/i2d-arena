@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 i2d Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            background: #fafafa;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e5;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card { 
+            background: #ffffff;
+            margin-bottom: 1.5rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            transition: box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            background: #ffffff;
+            color: #1a1a1a;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 1.25rem 1.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .metric-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .metric-value { 
+            font-size: 2.25rem; 
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0.75rem 0;
+            letter-spacing: -0.02em;
+        }
+        
+        .metric-label { 
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .tab-button {
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            color: #6b7280;
+        }
+        
+        .tab-button:hover {
+            color: #1a1a1a;
+            background-color: transparent;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #1a1a1a;
+            color: #1a1a1a;
+        }
+        
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease;
+        }
+        
+        .sortable:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .sort-icon {
+            margin-left: 0.5rem;
+            opacity: 0.4;
+            font-size: 0.75rem;
+        }
+        
+        .rank-badge {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            padding: 0.375rem 0.75rem;
+            min-width: 2.25rem;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        .rank-1 {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+        }
+        
+        .rank-2 {
+            background: #e5e7eb !important;
+            color: #374151 !important;
+        }
+        
+        .rank-3 {
+            background: #fde68a !important;
+            color: #78350f !important;
+        }
+        
+        .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) {
+            background: #f3f4f6 !important;
+            color: #6b7280 !important;
+        }
+        
+        @media print {
+            .card { box-shadow: none; border: 1px solid #e5e5e5; }
+            .navbar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar mb-12">
+        <div class="container mx-auto px-6 py-5">
+            <div class="flex justify-between items-center">
+                <span class="text-xl font-semibold text-gray-900">
+                    🎯i2d Arena
+                </span>
+                <a href="https://github.com/hasnainmumtaz/i2d-arena" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-sm">GitHub</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 max-w-7xl">
+        <ul class="flex border-b border-gray-200 mb-12" id="myTab" role="tablist">
+            <li class="mr-1" role="presentation">
+                <button class="tab-button active px-5 py-3 text-sm font-medium bg-transparent" id="overview-tab" onclick="switchTab('overview')" type="button" role="tab">Overview</button>
+            </li>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="comparison-tab" onclick="switchTab('comparison')" type="button" role="tab">As-is Data Extraction</button>
+            </li>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="orientation-tab" onclick="switchTab('orientation')" type="button" role="tab">Orientation Extraction Test</button>
+            </li>
+            <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="methodology-tab" onclick="switchTab('methodology')" type="button" role="tab">Methodology</button>
+            </li>
+        </ul>
+
+        <div id="myTabContent">
+            <!-- Overview Tab -->
+            <div class="tab-pane active" id="overview" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                    <div class="metric-card">
+                        <div class="metric-label">Models Compared</div>
+                        <div class="metric-value">14</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Images (Extraction)</div>
+                        <div class="metric-value">30</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Orientation Tests</div>
+                        <div class="metric-value">30</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="card">
+                        <div class="card-header">Best Performers (Extraction)</div>
+                        <div class="p-6">
+                            <ul class="divide-y divide-gray-100">
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Highest Accuracy</div>
+                                        <div class="text-sm text-gray-500 flex items-center"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span><span>GPT-4.1</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">81.2%</span>
+                                </li>
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Fastest Processing</div>
+                                        <div class="text-sm text-gray-500 flex items-center"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span><span>GPT-4.1-mini</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">3.62s</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Best Performers (Orientation)</div>
+                        <div class="p-6">
+                            <ul class="divide-y divide-gray-100">
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Highest Accuracy</div>
+                                        <div class="text-sm text-gray-500 flex items-center"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span><span>Gemini-3-pro-preview</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">83.3%</span>
+                                </li>
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Fastest Processing</div>
+                                        <div class="text-sm text-gray-500 flex items-center"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span><span>GPT-4.1-mini</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">1.26s</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- As-is Data Extraction Tab -->
+            <div class="tab-pane hidden" id="comparison" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Model Accuracy Comparison</h5>
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Processing Time (avg)</h5>
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <span class="text-gray-900">Detailed Metrics</span>
+                        <button class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded text-sm font-medium transition-colors border border-gray-200" onclick="exportTable('comparisonTable', 'comparison_metrics.csv')">
+                            Export CSV
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="search-box mb-4">
+                            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 bg-white" id="comparisonSearch" placeholder="Search models..." onkeyup="filterTable('comparisonTable', 'comparisonSearch')">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table" id="comparisonTable">
+                                <thead class="bg-gray-50 text-gray-900">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 3)">Avg Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('comparisonTable', 4)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-1">1</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 81.25%"></div></div> <span class="text-gray-700">81.2%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">5.12</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-2">2</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1-mini</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 80.66666666666666%"></div></div> <span class="text-gray-700">80.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">3.62</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-3">3</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5-mini</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 80.58333333333334%"></div></div> <span class="text-gray-700">80.6%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">12.15</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-4">4</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 79.66666666666666%"></div></div> <span class="text-gray-700">79.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">68.74</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-5">5</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5.1</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 78.41666666666666%"></div></div> <span class="text-gray-700">78.4%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">4.02</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">1092</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-6">6</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5-nano</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 78.25000000000001%"></div></div> <span class="text-gray-700">78.3%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">31.53</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-7">7</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1-nano</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 73.83333333333333%"></div></div> <span class="text-gray-700">73.8%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">3.92</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">3083</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-8">8</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-3-pro-preview</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 73.33333333333333%"></div></div> <span class="text-gray-700">73.3%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">72.95</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-9">9</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-2.5-pro</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 72.41379310344827%"></div></div> <span class="text-gray-700">72.4%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">14.59</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-10">10</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-2.5-flash</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 71.66666666666667%"></div></div> <span class="text-gray-700">71.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">11.92</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-11">11</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-haiku-4-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 70.83333333333334%"></div></div> <span class="text-gray-700">70.8%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">7.44</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-12">12</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-3-5-haiku-latest</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 70.6896551724138%"></div></div> <span class="text-gray-700">70.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">9.39</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-13">13</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-sonnet-4-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 66.66666666666666%"></div></div> <span class="text-gray-700">66.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">15.67</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-14">14</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-sonnet-4-0</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 65.0%"></div></div> <span class="text-gray-700">65.0%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">13.55</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orientation Extraction Test Tab -->
+            <div class="tab-pane hidden" id="orientation" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Overall Accuracy</h5>
+                            <canvas id="orientationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Accuracy by Rotation</h5>
+                            <canvas id="rotationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <span class="text-gray-900">Detailed Orientation Results</span>
+                        <button class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded text-sm font-medium transition-colors border border-gray-200" onclick="exportTable('orientationTable', 'orientation_metrics.csv')">
+                            Export CSV
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="search-box mb-4">
+                            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 bg-white" id="orientationSearch" placeholder="Search models..." onkeyup="filterTable('orientationTable', 'orientationSearch')">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table" id="orientationTable">
+                                <thead class="bg-gray-50 text-gray-900">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 3)">Correct/Total <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 4)">Mean Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('orientationTable', 5)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-1">1</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 83.33333333333334%"></div></div> <span class="text-gray-700">83.3%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">100/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">18.25</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-2">2</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-3-pro-preview</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 83.33333333333334%"></div></div> <span class="text-gray-700">83.3%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">100/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">57.03</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-3">3</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-sonnet-4-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 81.66666666666667%"></div></div> <span class="text-gray-700">81.7%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">98/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">3.15</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-4">4</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5-mini</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 79.16666666666666%"></div></div> <span class="text-gray-700">79.2%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">95/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">10.81</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-5">5</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5.1</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 77.5%"></div></div> <span class="text-gray-700">77.5%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">93/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">2.33</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">1018</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-6">6</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1-mini</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 74.16666666666667%"></div></div> <span class="text-gray-700">74.2%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">89/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">1.26</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-7">7</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 74.16666666666667%"></div></div> <span class="text-gray-700">74.2%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">89/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">2.25</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-8">8</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-5-nano</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 70.0%"></div></div> <span class="text-gray-700">70.0%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">84/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">12.84</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-9">9</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/anthropic_small.svg" alt="Anthropic" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🧠</span></span>Claude-haiku-4-5</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 67.5%"></div></div> <span class="text-gray-700">67.5%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">81/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">1.69</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-10">10</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-2.5-pro</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 65.83333333333333%"></div></div> <span class="text-gray-700">65.8%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">79/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">7.99</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-11">11</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>Gemini-2.5-flash</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 55.00000000000001%"></div></div> <span class="text-gray-700">55.0%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">66/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">5.17</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">N/A</td></tr><tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-12">12</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900"><span style="display: inline-flex; align-items: center; margin-right: 8px; width: 24px; height: 24px;"><img src="https://artificialanalysis.ai/img/logos/openai_small.svg" alt="OpenAI" style="width: 24px; height: 24px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"><span style="display:none; margin-right: 8px; font-size: 20px;">🤖</span></span>GPT-4.1-nano</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: 32.5%"></div></div> <span class="text-gray-700">32.5%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">39/120</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">1.63</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">3015</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Methodology Tab -->
+            <div class="tab-pane hidden" id="methodology" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="text-base font-semibold text-gray-900">Testing Methodology</h4>
+                    </div>
+                    <div class="p-6">
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Overview</h5>
+                        <p class="mb-6 text-gray-700 leading-relaxed">The i2d Arena is a comprehensive benchmarking platform designed to evaluate the capabilities of Large Language Models (LLMs) with vision capabilities in extracting structured data from document images, particularly invoices and receipts. The platform employs two complementary testing methodologies to assess different aspects of model performance.</p>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">1. As-is Data Extraction Test</h5>
+                        
+                        <p class="mb-4 text-gray-700 leading-relaxed"><strong>Description:</strong> This test evaluates how accurately LLM models can extract structured information from document images in their original, unmodified orientation. The test simulates real-world scenarios where documents are scanned or photographed in their natural orientation and need to be processed for data extraction.</p>
+                        
+                        <p class="mb-3 text-gray-700"><strong>Purpose:</strong> Assess the baseline performance of models in extracting structured data from properly oriented documents, which represents the most common use case in production environments.</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Test Process:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li>Each model processes the same set of invoice and receipt images</li>
+                            <li>Images are presented in their original, unmodified state (no rotations or transformations)</li>
+                            <li>Models are prompted to extract four key structured fields from each image:
+                                <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                                    <li><strong>Company Name:</strong> The name of the business or vendor</li>
+                                    <li><strong>Date:</strong> The transaction or invoice date</li>
+                                    <li><strong>Address:</strong> The business address or location</li>
+                                    <li><strong>Total Amount:</strong> The total monetary value of the transaction</li>
+                                </ul>
+                            </li>
+                            <li>Models return structured JSON responses with the extracted fields</li>
+                            <li>Results are compared against manually verified ground truth data for accuracy assessment</li>
+                            <li>All models are tested using identical prompts and parameters to ensure fair comparison</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Evaluation Metrics:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Overall Accuracy:</strong> Percentage of correctly extracted fields across all images and all fields. Calculated as (Total correct fields) / (Total fields × Total images)</li>
+                            <li><strong>Field-level Accuracy:</strong> Individual accuracy scores for each of the four fields (company, date, address, total), allowing identification of which fields are most challenging for each model</li>
+                            <li><strong>Exact Match Rate:</strong> Percentage of fields that match the ground truth exactly (case-insensitive, after normalization)</li>
+                            <li><strong>Partial Match Rate:</strong> Percentage of fields that partially match (e.g., 70%+ word overlap for text, matching numeric values for dates/totals)</li>
+                            <li><strong>Average Processing Time:</strong> Mean time taken to process each image, measured in seconds</li>
+                            <li><strong>Token Usage:</strong> Average number of tokens consumed per image (input, output, and total tokens) for cost and efficiency analysis</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Matching Logic:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Text Fields (Company, Address):</strong> Case-insensitive comparison with whitespace normalization. Partial matches are scored when ≥70% word overlap is detected</li>
+                            <li><strong>Date Fields:</strong> Numeric components are extracted and compared, allowing for format variations (e.g., "01/15/2024" vs "2024-01-15")</li>
+                            <li><strong>Total Fields:</strong> Numeric values are extracted and compared, ignoring currency symbols and formatting differences</li>
+                            <li>Each field is scored as: Exact match (1.0), Partial match (0.7), or No match (0.0)</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">2. Orientation Extraction Test</h5>
+                        
+                        <p class="mb-4 text-gray-700 leading-relaxed"><strong>Description:</strong> This test evaluates how accurately LLM models can detect the rotation angle of document images. Each test image is systematically rotated to four different orientations (0°, 90°, 180°, 270°) and the model must identify the correct rotation angle. This test assesses the model's spatial reasoning and ability to understand image orientation, which is critical for handling documents that may be scanned or photographed at various angles.</p>
+                        
+                        <p class="mb-3 text-gray-700"><strong>Purpose:</strong> Evaluate model robustness in handling rotated images and assess their ability to detect and potentially correct for orientation issues, which is essential for real-world document processing pipelines where documents may not always be properly oriented.</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Test Process:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li>Each test image is systematically rotated to four orientations: 0° (upright), 90° (rotated clockwise), 180° (upside down), and 270° (rotated counter-clockwise)</li>
+                            <li>For each image, models process all four rotated versions</li>
+                            <li>Models are prompted to identify the rotation angle and respond with one of: 0, 90, 180, or 270 degrees</li>
+                            <li>The model's response is parsed to extract the detected rotation angle (handling various response formats like "0 degrees", "upright", "0°", etc.)</li>
+                            <li>Each detection is marked as correct or incorrect based on whether it matches the actual rotation applied</li>
+                            <li>Optional: Multiple replications per rotation can be performed to assess consistency and account for non-deterministic model outputs</li>
+                            <li>Parallel processing is supported for faster execution when testing multiple models</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Evaluation Metrics:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>Overall Accuracy:</strong> Percentage of correct orientation detections across all tests (all images × all rotations × replications)</li>
+                            <li><strong>Accuracy by Rotation:</strong> Performance breakdown for each rotation angle (0°, 90°, 180°, 270°), revealing which orientations are most challenging for each model</li>
+                            <li><strong>Correct/Total Tests:</strong> Raw count of successful detections out of total tests performed, providing absolute performance numbers</li>
+                            <li><strong>Mean Processing Time:</strong> Average time per orientation test, measured in seconds</li>
+                            <li><strong>Token Usage:</strong> Average number of tokens consumed per orientation test for cost analysis</li>
+                            <li><strong>Consistency Score:</strong> When multiple replications are performed, this measures the variation in performance across replications, indicating model stability</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Response Parsing:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>The system uses flexible parsing to extract rotation angles from various response formats</li>
+                            <li>Accepts numeric values (0, 90, 180, 270), degree symbols (0°, 90°, etc.), and descriptive terms (upright, clockwise, upside down, counter-clockwise)</li>
+                            <li>Handles edge cases like 360° being normalized to 0°</li>
+                            <li>Invalid or unparseable responses are marked as incorrect</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Data Structure & Ground Truth</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Ground Truth Format:</h6>
+                        <p class="mb-2 text-gray-700">For the As-is Data Extraction Test, each image has a corresponding JSON file in the ground truth directory with the following structure:</p>
+                        <pre class="bg-gray-50 border border-gray-200 p-4 rounded mb-4 overflow-x-auto text-sm text-gray-800"><code>{
+  "company": "Company Name",
+  "date": "DD/MM/YYYY",
+  "address": "Full Address",
+  "total": "Amount"
+}</code></pre>
+                        <p class="mb-4 text-gray-700 text-sm">The ground truth files are manually verified to ensure accuracy. For the Orientation Extraction Test, the ground truth is the known rotation angle applied to each image (0°, 90°, 180°, or 270°).</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Supported Image Formats:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>JPEG/JPG:</strong> Standard photo format, most common for scanned documents</li>
+                            <li><strong>PNG:</strong> Lossless image format, preserves quality but larger file sizes</li>
+                            <li><strong>WebP:</strong> Modern web image format with good compression</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Technical Implementation</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Framework & Infrastructure:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li><strong>LangChain Integration:</strong> All models are tested using the LangChain framework, ensuring consistent API interfaces and error handling</li>
+                            <li><strong>Structured Output:</strong> For data extraction tests, JSON schema enforcement ensures models return data in the expected format</li>
+                            <li><strong>Parallel Processing:</strong> Both tests support parallel execution for faster completion when testing multiple models or images</li>
+                            <li><strong>Token Tracking:</strong> All API calls track token usage (input, output, and total) for cost analysis and efficiency monitoring</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Supported LLM Providers:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li><strong>OpenAI:</strong> GPT-4o, GPT-4o-mini, GPT-4 Turbo, and other vision-capable models</li>
+                            <li><strong>Anthropic:</strong> Claude 3.5 Sonnet, Claude 3 Opus, and other Claude models with vision</li>
+                            <li><strong>Google:</strong> Gemini Pro, Gemini Ultra, and other Gemini models</li>
+                            <li><strong>Ollama:</strong> Local models like LLaVA for on-premise testing</li>
+                            <li><strong>HuggingFace:</strong> Open-source vision-language models via API</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Prompt Engineering:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Standardized prompts are used across all models to ensure fair comparison</li>
+                            <li>Prompts are optimized for structured output and clear instructions</li>
+                            <li>For orientation tests, prompts explicitly request numeric angle responses (0, 90, 180, 270)</li>
+                            <li>For data extraction, prompts specify the four required fields and JSON format</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Accuracy Calculation & Scoring</h5>
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">As-is Data Extraction Scoring:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li><strong>Text Normalization:</strong> All text is normalized before comparison (whitespace removal, case-insensitive)</li>
+                            <li><strong>Exact Match:</strong> Field matches ground truth exactly after normalization (score: 1.0)</li>
+                            <li><strong>Partial Match:</strong> Field has ≥70% word overlap for text, or matching numeric values for dates/totals (score: 0.7)</li>
+                            <li><strong>No Match:</strong> Field does not match (score: 0.0)</li>
+                            <li><strong>Field Accuracy:</strong> Average score for each field across all images</li>
+                            <li><strong>Overall Accuracy:</strong> Average of all field scores across all images = (Sum of all field scores) / (Number of fields × Number of images)</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Orientation Extraction Scoring:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Each test is binary: correct (1) or incorrect (0)</li>
+                            <li>Accuracy = (Number of correct detections) / (Total number of tests)</li>
+                            <li>Accuracy is calculated overall and separately for each rotation angle</li>
+                            <li>When replications are used, consistency is measured as the standard deviation of accuracy across replications</li>
+                        </ul>
+                        
+                        <hr class="my-8 border-gray-200">
+                        
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">Test Execution & Results</h5>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Tests can be run individually or in batch mode for multiple models</li>
+                            <li>Results are saved in JSON format with detailed metrics for each model</li>
+                            <li>Individual test results include processing times, token usage, and error information</li>
+                            <li>Summary statistics are calculated automatically and included in reports</li>
+                            <li>Results can be compiled across multiple test runs to generate aggregate statistics</li>
+                        </ul>
+                        
+                        <div class="bg-gray-50 border-l-2 border-gray-400 p-4 mt-6">
+                            <p class="text-gray-700 text-sm"><strong>Note on Reproducibility:</strong> All tests are designed to be reproducible. However, results may vary slightly between runs due to the non-deterministic nature of LLM outputs, especially when temperature > 0. For more consistent results, consider using temperature=0 or running multiple replications and averaging the results.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+                pane.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'text-indigo-600', 'border-indigo-600');
+                btn.classList.add('text-gray-600');
+            });
+            
+            // Show selected tab pane
+            const selectedPane = document.getElementById(tabName);
+            if (selectedPane) {
+                selectedPane.classList.remove('hidden');
+                selectedPane.classList.add('active');
+            }
+            
+            // Add active class to selected tab button
+            const selectedButton = document.getElementById(tabName + '-tab');
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+                selectedButton.classList.remove('text-gray-600');
+            }
+        }
+        
+        // Enhanced chart configurations (defined first)
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 12
+                    },
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            }
+        };
+        
+        // Comparison Chart
+        const ctxComp = document.getElementById('comparisonChart').getContext('2d');
+        const comparisonChart = new Chart(ctxComp, {
+            type: 'bar',
+            data: {
+                labels: ["GPT-4.1", "GPT-4.1-mini", "GPT-5-mini", "GPT-5", "GPT-5.1", "GPT-5-nano", "GPT-4.1-nano", "Gemini-3-pro-preview", "Gemini-2.5-pro", "Gemini-2.5-flash", "Claude-haiku-4-5", "Claude-3-5-haiku-latest", "Claude-sonnet-4-5", "Claude-sonnet-4-0"],
+                datasets: [
+                    {
+                        label: 'Accuracy (%)',
+                        data: [81.25, 80.66666666666666, 80.58333333333334, 79.66666666666666, 78.41666666666666, 78.25000000000001, 73.83333333333333, 73.33333333333333, 72.41379310344827, 71.66666666666667, 70.83333333333334, 70.6896551724138, 66.66666666666666, 65.0],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: chartOptions.responsive,
+                maintainAspectRatio: chartOptions.maintainAspectRatio,
+                plugins: chartOptions.plugins,
+                animation: chartOptions.animation,
+                interaction: chartOptions.interaction,
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    } 
+                }
+            }
+        });
+
+        // Time Chart
+        const ctxTime = document.getElementById('timeChart').getContext('2d');
+         const timeChart = new Chart(ctxTime, {
+            type: 'bar',
+            data: {
+                labels: ["GPT-4.1", "GPT-4.1-mini", "GPT-5-mini", "GPT-5", "GPT-5.1", "GPT-5-nano", "GPT-4.1-nano", "Gemini-3-pro-preview", "Gemini-2.5-pro", "Gemini-2.5-flash", "Claude-haiku-4-5", "Claude-3-5-haiku-latest", "Claude-sonnet-4-5", "Claude-sonnet-4-0"],
+                datasets: [{
+                    label: 'Avg Processing Time (s)',
+                    data: [5.1228549718856815, 3.6196884632110597, 12.149744439125062, 68.73829240004221, 4.024761954943339, 31.53284616470337, 3.9233896096547443, 72.94622577826182, 14.591166893641153, 11.918908373514812, 7.442430845896403, 9.386228394508361, 15.666960446039836, 13.55477872689565],
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                 responsive: chartOptions.responsive,
+                 maintainAspectRatio: chartOptions.maintainAspectRatio,
+                 plugins: chartOptions.plugins,
+                 animation: chartOptions.animation,
+                 interaction: chartOptions.interaction,
+                 scales: { 
+                     y: { 
+                         beginAtZero: true,
+                         ticks: {
+                             callback: function(value) {
+                                 return value + 's';
+                             }
+                         }
+                     } 
+                 }
+            }
+        });
+         
+         // Token Usage Chart
+         const ctxToken = document.getElementById('tokenChart');
+         if (ctxToken) {
+             const tokenChart = new Chart(ctxToken.getContext('2d'), {
+                 type: 'bar',
+                 data: {
+                     labels: ["GPT-4.1", "GPT-4.1-mini", "GPT-5-mini", "GPT-5", "GPT-5.1", "GPT-5-nano", "GPT-4.1-nano", "Gemini-3-pro-preview", "Gemini-2.5-pro", "Gemini-2.5-flash", "Claude-haiku-4-5", "Claude-3-5-haiku-latest", "Claude-sonnet-4-5", "Claude-sonnet-4-0"],
+                     datasets: [{
+                         label: 'Avg Tokens per Image',
+                         data: [0, 0, 0, 0, 1092.4, 0, 3083.4, 0, 0, 0, 0, 0, 0, 0],
+                         backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                         borderColor: 'rgba(75, 192, 192, 1)',
+                         borderWidth: 1
+                     }]
+                 },
+                 options: {
+                     responsive: chartOptions.responsive,
+                     maintainAspectRatio: chartOptions.maintainAspectRatio,
+                     plugins: chartOptions.plugins,
+                     animation: chartOptions.animation,
+                     interaction: chartOptions.interaction,
+                     scales: { 
+                         y: { 
+                             beginAtZero: true,
+                             ticks: {
+                                 callback: function(value) {
+                                     return value.toLocaleString();
+                                 }
+                             }
+                         } 
+                     }
+                 }
+             });
+         }
+
+        // Orientation Chart
+        const ctxOrient = document.getElementById('orientationChart').getContext('2d');
+        const orientationChart = new Chart(ctxOrient, {
+            type: 'bar',
+            data: {
+                labels: ["GPT-5", "Gemini-3-pro-preview", "Claude-sonnet-4-5", "GPT-5-mini", "GPT-5.1", "GPT-4.1-mini", "GPT-4.1", "GPT-5-nano", "Claude-haiku-4-5", "Gemini-2.5-pro", "Gemini-2.5-flash", "GPT-4.1-nano"],
+                datasets: [{
+                    label: 'Orientation Accuracy (%)',
+                    data: [83.33333333333334, 83.33333333333334, 81.66666666666667, 79.16666666666666, 77.5, 74.16666666666667, 74.16666666666667, 70.0, 67.5, 65.83333333333333, 55.00000000000001, 32.5],
+                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: chartOptions.responsive,
+                maintainAspectRatio: chartOptions.maintainAspectRatio,
+                plugins: chartOptions.plugins,
+                animation: chartOptions.animation,
+                interaction: chartOptions.interaction,
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    } 
+                }
+            }
+        });
+        
+        // Rotation Accuracy Chart
+        const ctxRot = document.getElementById('rotationChart').getContext('2d');
+        const rotationChart = new Chart(ctxRot, {
+            type: 'bar',
+            data: {
+                labels: ["GPT-5", "Gemini-3-pro-preview", "Claude-sonnet-4-5", "GPT-5-mini", "GPT-5.1", "GPT-4.1-mini", "GPT-4.1", "GPT-5-nano", "Claude-haiku-4-5", "Gemini-2.5-pro", "Gemini-2.5-flash", "GPT-4.1-nano"],
+                datasets: [
+                    {
+                        label: '0°',
+                        data: [100.0, 100.0, 100.0, 100.0, 100.0, 93.33333333333333, 100.0, 90.0, 100.0, 100.0, 100.0, 13.333333333333334],
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '90°',
+                        data: [60.0, 90.0, 73.33333333333333, 80.0, 50.0, 10.0, 86.66666666666667, 50.0, 66.66666666666666, 46.666666666666664, 40.0, 6.666666666666667],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '180°',
+                        data: [100.0, 96.66666666666667, 96.66666666666667, 96.66666666666667, 100.0, 100.0, 100.0, 96.66666666666667, 93.33333333333333, 70.0, 36.666666666666664, 66.66666666666666],
+                        backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '270°',
+                        data: [73.33333333333333, 46.666666666666664, 56.666666666666664, 40.0, 60.0, 93.33333333333333, 10.0, 43.333333333333336, 10.0, 46.666666666666664, 43.333333333333336, 43.333333333333336],
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: chartOptions.responsive,
+                maintainAspectRatio: chartOptions.maintainAspectRatio,
+                plugins: {
+                    legend: chartOptions.plugins.legend,
+                    tooltip: {
+                        backgroundColor: chartOptions.plugins.tooltip.backgroundColor,
+                        padding: chartOptions.plugins.tooltip.padding,
+                        titleFont: chartOptions.plugins.tooltip.titleFont,
+                        bodyFont: chartOptions.plugins.tooltip.bodyFont,
+                        borderColor: chartOptions.plugins.tooltip.borderColor,
+                        borderWidth: chartOptions.plugins.tooltip.borderWidth,
+                        cornerRadius: chartOptions.plugins.tooltip.cornerRadius,
+                        displayColors: chartOptions.plugins.tooltip.displayColors,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                animation: chartOptions.animation,
+                interaction: chartOptions.interaction,
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    } 
+                }
+            }
+        });
+        
+        // Table sorting function
+        let sortDirection = {};
+        function sortTable(tableId, columnIndex, initialDirection = null) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            // Rank column (0) and numeric columns are numeric
+            const isNumeric = columnIndex === 0 || columnIndex > 1;
+            
+            const key = tableId + '_' + columnIndex;
+            if (initialDirection !== null) {
+                sortDirection[key] = initialDirection;
+            } else {
+                sortDirection[key] = !sortDirection[key];
+            }
+            const direction = sortDirection[key] ? 1 : -1;
+            
+            rows.sort((a, b) => {
+                let aVal = a.cells[columnIndex].textContent.trim();
+                let bVal = b.cells[columnIndex].textContent.trim();
+                
+                if (isNumeric) {
+                    // Extract numeric value
+                    aVal = parseFloat(aVal.replace(/[^0-9.]/g, '')) || 0;
+                    bVal = parseFloat(bVal.replace(/[^0-9.]/g, '')) || 0;
+                }
+                
+                if (aVal < bVal) return -1 * direction;
+                if (aVal > bVal) return 1 * direction;
+                return 0;
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Update sort icons
+            const headers = table.querySelectorAll('th');
+            headers.forEach((header, idx) => {
+                const icon = header.querySelector('.sort-icon');
+                if (icon) {
+                    if (idx === columnIndex) {
+                        icon.className = 'bi bi-arrow-' + (direction === 1 ? 'down' : 'up') + ' sort-icon';
+                    } else {
+                        icon.className = 'bi bi-arrow-down-up sort-icon';
+                    }
+                }
+            });
+        }
+        
+        // Table filtering function
+        function filterTable(tableId, searchId) {
+            const searchInput = document.getElementById(searchId);
+            const filter = searchInput.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toUpperCase();
+                row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
+            });
+        }
+        
+        // Export table to CSV
+        function exportTable(tableId, filename) {
+            const table = document.getElementById(tableId);
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/[\r\n]/g, '').replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                
+                csv.push(row.join(','));
+            }
+            
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+        
+        // Sort tables by rank by default on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sort comparison table by rank (ascending - rank 1 first)
+            const comparisonTable = document.getElementById('comparisonTable');
+            if (comparisonTable) {
+                sortTable('comparisonTable', 0, true); // true = ascending (1, 2, 3...)
+            }
+            
+            // Sort orientation table by rank (ascending - rank 1 first)
+            const orientationTable = document.getElementById('orientationTable');
+            if (orientationTable) {
+                sortTable('orientationTable', 0, true); // true = ascending (1, 2, 3...)
+            }
+        });
+    </script>
+    
+    <footer class="mt-16 py-8 border-t border-gray-200 bg-white">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-gray-500">
+                <span>Generated: 2025-11-25 00:57</span>
+                <span class="hidden md:inline">•</span>
+                <span>
+                    Contact: <a href="mailto:naqvi@uni.minerva.edu" class="text-gray-700 hover:text-gray-900 underline transition-colors">naqvi@uni.minerva.edu</a>
+                </span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
