@@ -169,10 +169,80 @@ def compile_orientation_results(results_dir="results/orientation", output_file="
     print(f"Compiled orientation report saved to: {output_file}")
     return report
 
+def compile_rotated_extraction_results(results_dir="results/rotated_extraction", output_file="rotated_extraction_test_results.json"):
+    """Compile individual rotated extraction results into a summary report"""
+    results_path = Path(results_dir)
+    if not results_path.exists():
+        print(f"Directory not found: {results_dir}")
+        return None
+
+    report = {
+        "timestamp": datetime.now().isoformat(),
+        "models_tested": [],
+        "summary": {},
+        "total_images": 0
+    }
+
+    json_files = list(results_path.glob("*.json"))
+    if not json_files:
+        print(f"No JSON files found in {results_dir}")
+        return None
+
+    print(f"Found {len(json_files)} rotated extraction result files.")
+
+    for file_path in json_files:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            model_name = data.get("model")
+            if model_name:
+                report["models_tested"].append(model_name)
+                summary_data = data.get("summary", {}).copy()
+                
+                # Ensure token usage fields are present
+                if "total_tokens" not in summary_data or summary_data.get("total_tokens") is None:
+                    results = data.get("results", [])
+                    total_input_tokens = sum(r.get("input_tokens", 0) or 0 for r in results)
+                    total_output_tokens = sum(r.get("output_tokens", 0) or 0 for r in results)
+                    total_tokens = sum(r.get("total_tokens", 0) or 0 for r in results)
+                    
+                    token_results = [r for r in results if r.get("total_tokens") is not None]
+                    if token_results:
+                        avg_input = sum(r.get("input_tokens", 0) or 0 for r in token_results) / len(token_results)
+                        avg_output = sum(r.get("output_tokens", 0) or 0 for r in token_results) / len(token_results)
+                        avg_total = sum(r.get("total_tokens", 0) or 0 for r in token_results) / len(token_results)
+                    else:
+                        avg_input = avg_output = avg_total = None
+                    
+                    if total_tokens > 0:
+                        summary_data["total_input_tokens"] = total_input_tokens
+                        summary_data["total_output_tokens"] = total_output_tokens
+                        summary_data["total_tokens"] = total_tokens
+                        summary_data["average_input_tokens"] = avg_input
+                        summary_data["average_output_tokens"] = avg_output
+                        summary_data["average_total_tokens"] = avg_total
+                
+                report["summary"][model_name] = summary_data
+                
+    # Try to set total images from one of the files
+    if json_files:
+         with open(json_files[0], 'r', encoding='utf-8') as f:
+             first_data = json.load(f)
+             summary = first_data.get("summary", {})
+             if summary:
+                 # Estimate total images from total_tests / 4 (rotations)
+                 report["total_images"] = summary.get("total_tests", 0) // 4
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+
+    print(f"Compiled rotated extraction report saved to: {output_file}")
+    return report
+
 def main():
     print("Compiling results...")
     compile_comparison_results()
     compile_orientation_results()
+    compile_rotated_extraction_results()
     print("Done.")
 
 if __name__ == "__main__":

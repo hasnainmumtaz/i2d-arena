@@ -380,6 +380,148 @@ class AnthropicTranscriber(ImageTranscriber):
             self.model = ChatAnthropic(**model_kwargs)
         except ImportError:
             raise ImportError("Please install langchain-anthropic: pip install langchain-anthropic")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Anthropic Claude
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        from pydantic import BaseModel, Field
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Define Pydantic model for structured output
+                class InvoiceExtraction(BaseModel):
+                    company: str | None = Field(None, description="Company or business name")
+                    date: str | None = Field(None, description="Date in DD/MM/YYYY format")
+                    address: str | None = Field(None, description="Full address")
+                    total: str | None = Field(None, description="Total amount as string")
+                
+                # Use LangChain's with_structured_output for structured extraction
+                # This ensures the output matches the schema exactly
+                structured_model = self.model.with_structured_output(InvoiceExtraction)
+                
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": prompt},
+                        image_content
+                    ]
+                )
+                
+                # Invoke structured model
+                structured_response = structured_model.invoke([message])
+                
+                # Try to get token usage from the underlying response if available
+                # Note: with_structured_output may not preserve response metadata
+                # We'll try to extract it, but if not available, we'll invoke once more to get token usage
+                try:
+                    # Check if the response has metadata (some LangChain versions preserve it)
+                    if hasattr(structured_response, 'response_metadata'):
+                        self._last_token_usage = self._extract_token_usage(structured_response)
+                    else:
+                        # Fallback: invoke regular model once to get token usage
+                        # This is not ideal but ensures we track token usage
+                        regular_response = self.model.invoke([message])
+                        self._last_token_usage = self._extract_token_usage(regular_response)
+                except:
+                    # If we can't get token usage, set to None
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Convert Pydantic model to dict
+                if isinstance(structured_response, BaseModel):
+                    result = structured_response.model_dump()
+                else:
+                    result = dict(structured_response) if hasattr(structured_response, '__dict__') else structured_response
+                
+                return result
+            except Exception as e:
+                # Fallback to regular LangChain if structured output fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
 
 
 class GoogleTranscriber(ImageTranscriber):
@@ -403,6 +545,141 @@ class GoogleTranscriber(ImageTranscriber):
             self.model = ChatGoogleGenerativeAI(**model_kwargs)
         except ImportError:
             raise ImportError("Please install langchain-google-genai: pip install langchain-google-genai")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Google Gemini
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        from pydantic import BaseModel, Field
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Define Pydantic model for structured output
+                class InvoiceExtraction(BaseModel):
+                    company: str | None = Field(None, description="Company or business name")
+                    date: str | None = Field(None, description="Date in DD/MM/YYYY format")
+                    address: str | None = Field(None, description="Full address")
+                    total: str | None = Field(None, description="Total amount as string")
+                
+                # Use LangChain's with_structured_output for structured extraction
+                structured_model = self.model.with_structured_output(InvoiceExtraction)
+                
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": prompt},
+                        image_content
+                    ]
+                )
+                
+                # Invoke structured model
+                structured_response = structured_model.invoke([message])
+                
+                # Try to get token usage
+                try:
+                    if hasattr(structured_response, 'response_metadata'):
+                        self._last_token_usage = self._extract_token_usage(structured_response)
+                    else:
+                        regular_response = self.model.invoke([message])
+                        self._last_token_usage = self._extract_token_usage(regular_response)
+                except:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Convert Pydantic model to dict
+                if isinstance(structured_response, BaseModel):
+                    result = structured_response.model_dump()
+                else:
+                    result = dict(structured_response) if hasattr(structured_response, '__dict__') else structured_response
+                
+                return result
+            except Exception as e:
+                # Fallback to regular LangChain if structured output fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
 
 
 class OllamaTranscriber(ImageTranscriber):
@@ -427,10 +704,33 @@ class OllamaTranscriber(ImageTranscriber):
         except ImportError:
             raise ImportError("Please install langchain-ollama: pip install langchain-ollama")
     
-    def transcribe(self, image_path: Union[str, Path], prompt: str = "Transcribe or describe everything you see in this image in detail.") -> str:
-        """Transcribe image using Ollama - handles base64 encoding for local files"""
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Ollama - handles base64 encoding for local files
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
         import base64
+        import json
         from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
         
         # Load and encode image
         image_path_str = str(image_path)
@@ -459,13 +759,66 @@ class OllamaTranscriber(ImageTranscriber):
         
         try:
             response = self.model.invoke([message])
-            return response.content
-        except Exception:
+            content = response.content
+            
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            
+            # If structured output requested, try to parse JSON
+            if structured:
+                try:
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    
+                    # Try to parse as JSON
+                    if content.strip().startswith('{'):
+                        return json.loads(content)
+                    else:
+                        # If not valid JSON, return with error
+                        return {"raw_response": content, "error": "Response is not valid JSON"}
+                except json.JSONDecodeError as e:
+                    return {"raw_response": content, "error": f"JSON parsing failed: {str(e)}"}
+            
+            return content
+        except Exception as e:
             # Fallback: some Ollama setups might need different format
-            # Try with just the image data
-            message = HumanMessage(content=[prompt, base64_image])
-            response = self.model.invoke([message])
-            return response.content
+            try:
+                message = HumanMessage(content=[prompt, base64_image])
+                response = self.model.invoke([message])
+                content = response.content
+                
+                # Store token usage
+                self._last_token_usage = self._extract_token_usage(response)
+                
+                # If structured output requested, try to parse JSON
+                if structured:
+                    try:
+                        if "```json" in content:
+                            json_start = content.find("```json") + 7
+                            json_end = content.find("```", json_start)
+                            content = content[json_start:json_end].strip()
+                        elif "```" in content:
+                            json_start = content.find("```") + 3
+                            json_end = content.find("```", json_start)
+                            content = content[json_start:json_end].strip()
+                        
+                        if content.strip().startswith('{'):
+                            return json.loads(content)
+                        else:
+                            return {"raw_response": content, "error": "Response is not valid JSON"}
+                    except json.JSONDecodeError as parse_error:
+                        return {"raw_response": content, "error": f"JSON parsing failed: {str(parse_error)}"}
+                
+                return content
+            except Exception as fallback_error:
+                return {"raw_response": str(e), "error": str(fallback_error)}
 
 
 class HuggingFaceTranscriber(ImageTranscriber):
@@ -480,10 +833,33 @@ class HuggingFaceTranscriber(ImageTranscriber):
         # Create a dummy model object to satisfy the base class
         self.model = None
     
-    def transcribe(self, image_path: Union[str, Path], prompt: str = "Transcribe or describe everything you see in this image in detail.") -> str:
-        """Transcribe image using Hugging Face API directly"""
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Hugging Face API directly
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
         import requests
         import base64
+        import json
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
         
         # Load and encode image
         image_path_str = str(image_path)
@@ -499,19 +875,57 @@ class HuggingFaceTranscriber(ImageTranscriber):
         
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         
+        # For HuggingFace, we need to include the prompt in the request
+        # Note: HuggingFace API structure may vary by model
+        request_data = {
+            "inputs": base64_image
+        }
+        
+        # Some HuggingFace models support text prompts
+        if prompt:
+            request_data["parameters"] = {"prompt": prompt}
+        
         response = requests.post(
             f"https://api-inference.huggingface.co/models/{self.model_name}",
             headers=headers,
-            json={
-                "inputs": base64_image
-            }
+            json=request_data
         )
         response.raise_for_status()
         
         result = response.json()
+        
+        # Extract text from response
         if isinstance(result, list) and len(result) > 0:
-            return result[0].get("generated_text", str(result))
-        return str(result)
+            content = result[0].get("generated_text", str(result))
+        else:
+            content = str(result)
+        
+        # Store token usage (HuggingFace may not provide this)
+        self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+        
+        # If structured output requested, try to parse JSON
+        if structured:
+            try:
+                # Extract JSON from markdown code blocks if present
+                if "```json" in content:
+                    json_start = content.find("```json") + 7
+                    json_end = content.find("```", json_start)
+                    content = content[json_start:json_end].strip()
+                elif "```" in content:
+                    json_start = content.find("```") + 3
+                    json_end = content.find("```", json_start)
+                    content = content[json_start:json_end].strip()
+                
+                # Try to parse as JSON
+                if content.strip().startswith('{'):
+                    return json.loads(content)
+                else:
+                    # If not valid JSON, return with error
+                    return {"raw_response": content, "error": "Response is not valid JSON"}
+            except json.JSONDecodeError as e:
+                return {"raw_response": content, "error": f"JSON parsing failed: {str(e)}"}
+        
+        return content
 
 
 def create_transcriber(provider: str, model_name: Optional[str] = None, api_key: Optional[str] = None, **kwargs):
@@ -664,6 +1078,62 @@ def process_comparison_mode(args):
     return 0
 
 
+def process_rotated_extraction_test_mode(args):
+    """Handle rotated extraction test mode"""
+    from rotated_extraction_test import RotatedExtractionTester
+    
+    # Parse model configurations from command line
+    # Format: --models "name1:provider1:model1" "name2:provider2:model2"
+    model_configs = []
+    
+    if args.models:
+        for model_spec in args.models:
+            parts = model_spec.split(':')
+            if len(parts) >= 3:
+                name, provider, model_name = parts[0], parts[1], parts[2]
+                config = {
+                    'name': name,
+                    'provider': provider,
+                    'model_name': model_name,
+                    'api_key': args.api_key  # Use same API key for all if provided
+                }
+                model_configs.append(config)
+            else:
+                print(f"Warning: Invalid model specification '{model_spec}'. Expected format: 'name:provider:model_name'")
+    else:
+        print("Error: --models argument is required for rotated extraction test mode")
+        print("Example: --models 'GPT-4o:openai:gpt-4o' 'Claude:anthropic:claude-3-5-sonnet-20241022'")
+        return 1
+    
+    if not model_configs:
+        print("Error: No valid model configurations provided")
+        return 1
+    
+    # Initialize tester
+    tester = RotatedExtractionTester(
+        images_dir=args.images_dir,
+        ground_truth_dir=args.ground_truth_dir
+    )
+    
+    # Run test
+    report = tester.test_batch(
+        model_configs=model_configs,
+        prompt=args.prompt,
+        max_images=args.max_images,
+        parallel=not args.no_parallel,
+        max_workers=args.max_workers
+    )
+    
+    # Print summary
+    tester.print_summary(report)
+    
+    # Save results
+    output_file = args.output or "rotated_extraction_test_results.json"
+    tester.save_results(report, output_file)
+    
+    return 0
+
+
 def process_batch_mode(args):
     """Handle batch processing mode"""
     from batch_processor import BatchProcessor
@@ -761,6 +1231,9 @@ Examples:
   
   # Orientation Extraction Test with multiple replications
   python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o" --replications 3
+  
+  # Rotated Extraction Test (data extraction accuracy on rotated images)
+  python image_transcriber.py --rotated-extraction-test --images-dir images --ground-truth-dir gdt --models "GPT-4o:openai:gpt-4o" "Claude:anthropic:claude-3-5-sonnet-20241022"
         """
     )
     
@@ -771,6 +1244,8 @@ Examples:
                        help="Enable As-is Data Extraction mode")
     parser.add_argument("--orientation-test", action="store_true",
                        help="Enable Orientation Extraction Test mode")
+    parser.add_argument("--rotated-extraction-test", action="store_true",
+                       help="Enable Rotated Extraction Test mode (tests data extraction accuracy on rotated images)")
     
     # Single image mode arguments
     parser.add_argument("image", nargs="?", help="Path to image file or image URL (for single image mode)")
@@ -807,7 +1282,9 @@ Examples:
     args = parser.parse_args()
     
     # Determine mode
-    if args.orientation_test:
+    if args.rotated_extraction_test:
+        return process_rotated_extraction_test_mode(args)
+    elif args.orientation_test:
         return process_orientation_test_mode(args)
     elif args.compare:
         return process_comparison_mode(args)
@@ -816,7 +1293,7 @@ Examples:
     elif args.image:
         return process_single_mode(args)
     else:
-        parser.error("Either provide an image path (single mode), use --batch flag (batch mode), --compare flag (comparison mode), or --orientation-test flag (orientation test mode)")
+        parser.error("Either provide an image path (single mode), use --batch flag (batch mode), --compare flag (comparison mode), --orientation-test flag (orientation test mode), or --rotated-extraction-test flag (rotated extraction test mode)")
 
 
 if __name__ == "__main__":

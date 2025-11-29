@@ -38,7 +38,7 @@ def get_provider_logo(model_name):
     else:
         return '<span style="margin-right: 8px; font-size: 20px;">🤖</span>'
 
-def generate_html(comparison_data, orientation_data):
+def generate_html(comparison_data, orientation_data, rotated_extraction_data=None):
     """Generate HTML dashboard"""
     
     # Prepare data for charts
@@ -208,6 +208,96 @@ def generate_html(comparison_data, orientation_data):
                     else:
                         acc = val
                     rotation_accuracies[angle].append(acc * 100)
+
+    # Prepare rotated extraction data
+    rotated_models = []
+    rotated_accuracies = []
+    rotated_rotation_accuracies = {0: [], 90: [], 180: [], 270: []}
+    rotated_avg_tokens = []
+    rotated_total_tokens = []
+    rotated_avg_times = []
+    
+    if rotated_extraction_data:
+        summary = rotated_extraction_data.get('summary', {})
+        for model, data in summary.items():
+            rotated_models.append(model)
+            rotated_accuracies.append(data.get('overall_accuracy', 0) * 100)
+            rotated_avg_tokens.append(data.get('average_total_tokens') or 0)
+            rotated_total_tokens.append(data.get('total_tokens') or 0)
+            rotated_avg_times.append(data.get('mean_processing_time') or 0)
+            
+            # Get rotation accuracies
+            rot_acc = data.get('accuracy_by_rotation', {})
+            for angle in [0, 90, 180, 270]:
+                val = rot_acc.get(str(angle), rot_acc.get(angle, 0))
+                if isinstance(val, dict):
+                    acc = val.get('accuracy', 0)
+                else:
+                    acc = val
+                rotated_rotation_accuracies[angle].append(acc * 100)
+
+    # Calculate rankings for rotated extraction models and sort by rank
+    rotated_rankings = {}
+    if rotated_models and rotated_accuracies:
+        # Create list of (model, accuracy, time) tuples
+        rotated_model_data = list(zip(rotated_models, rotated_accuracies, rotated_avg_times))
+        # Sort by accuracy (descending), then by time (ascending) for tie-breaking
+        rotated_model_data_sorted = sorted(rotated_model_data, key=lambda x: (-x[1], x[2]))
+        # Assign rankings
+        for rank, (model, acc, time) in enumerate(rotated_model_data_sorted, 1):
+            rotated_rankings[model] = rank
+        
+        # Reorder rotated data by rank
+        model_to_idx = {m: i for i, m in enumerate(rotated_models)}
+        rotated_models = [m for m, _, _ in rotated_model_data_sorted]
+        rotated_accuracies = [a for _, a, _ in rotated_model_data_sorted]
+        rotated_avg_times = [t for _, _, t in rotated_model_data_sorted]
+        
+        # Reorder token data to match sorted models
+        if rotated_avg_tokens and rotated_total_tokens and len(rotated_avg_tokens) == len(model_to_idx):
+            rotated_avg_tokens = [rotated_avg_tokens[model_to_idx.get(m, 0)] for m in rotated_models]
+            rotated_total_tokens = [rotated_total_tokens[model_to_idx.get(m, 0)] for m in rotated_models]
+        else:
+            if not rotated_avg_tokens or len(rotated_avg_tokens) != len(rotated_models):
+                rotated_avg_tokens = [0] * len(rotated_models)
+            if not rotated_total_tokens or len(rotated_total_tokens) != len(rotated_models):
+                rotated_total_tokens = [0] * len(rotated_models)
+        
+        # Reorder rotation accuracies to match sorted models
+        if rotated_extraction_data:
+            summary = rotated_extraction_data.get('summary', {})
+            rotated_rotation_accuracies = {0: [], 90: [], 180: [], 270: []}
+            for model in rotated_models:
+                data = summary.get(model, {})
+                rot_acc = data.get('accuracy_by_rotation', {})
+                for angle in [0, 90, 180, 270]:
+                    val = rot_acc.get(str(angle), rot_acc.get(angle, 0))
+                    if isinstance(val, dict):
+                        acc = val.get('accuracy', 0)
+                    else:
+                        acc = val
+                    rotated_rotation_accuracies[angle].append(acc * 100)
+
+    # Calculate best performers (Rotated Extraction)
+    best_rotated_model = "N/A"
+    best_rotated_val = 0
+    fastest_rotated_model = "N/A"
+    fastest_rotated_val = float('inf')
+    
+    if rotated_models:
+        # Best accuracy
+        max_rotated_acc = max(rotated_accuracies) if rotated_accuracies else 0
+        if max_rotated_acc > 0:
+            best_rotated_indices = [i for i, x in enumerate(rotated_accuracies) if x == max_rotated_acc]
+            best_rotated_model = rotated_models[best_rotated_indices[0]]
+            best_rotated_val = max_rotated_acc
+        
+        # Fastest time
+        if rotated_avg_times:
+            min_rotated_time = min(rotated_avg_times)
+            fastest_rotated_indices = [i for i, x in enumerate(rotated_avg_times) if x == min_rotated_time]
+            fastest_rotated_model = rotated_models[fastest_rotated_indices[0]]
+            fastest_rotated_val = min_rotated_time
 
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -391,6 +481,9 @@ def generate_html(comparison_data, orientation_data):
                 <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="orientation-tab" onclick="switchTab('orientation')" type="button" role="tab">Orientation Extraction Test</button>
             </li>
             <li class="mr-1" role="presentation">
+                <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="rotated-extraction-tab" onclick="switchTab('rotated-extraction')" type="button" role="tab">Rotated Extraction Test</button>
+            </li>
+            <li class="mr-1" role="presentation">
                 <button class="tab-button px-5 py-3 text-sm font-medium bg-transparent" id="methodology-tab" onclick="switchTab('methodology')" type="button" role="tab">Methodology</button>
             </li>
         </ul>
@@ -398,7 +491,7 @@ def generate_html(comparison_data, orientation_data):
         <div id="myTabContent">
             <!-- Overview Tab -->
             <div class="tab-pane active" id="overview" role="tabpanel">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
                     <div class="metric-card">
                         <div class="metric-label">Models Compared</div>
                         <div class="metric-value">{len(models)}</div>
@@ -411,9 +504,13 @@ def generate_html(comparison_data, orientation_data):
                         <div class="metric-label">Orientation Tests</div>
                         <div class="metric-value">{orientation_data.get('total_images', 'N/A') if orientation_data else 'N/A'}</div>
                     </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Rotated Extraction Tests</div>
+                        <div class="metric-value">{rotated_extraction_data.get('total_images', 'N/A') if rotated_extraction_data else 'N/A'}</div>
+                    </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div class="card">
                         <div class="card-header">Best Performers (Extraction)</div>
                         <div class="p-6">
@@ -452,6 +549,27 @@ def generate_html(comparison_data, orientation_data):
                                         <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(fastest_orient_model) if orientation_models else ''}<span>{fastest_orient_model}</span></div>
                                     </div>
                                     <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{fastest_orient_val:.2f}s" if orientation_models else "N/A"}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Best Performers (Rotated Extraction)</div>
+                        <div class="p-6">
+                            <ul class="divide-y divide-gray-100">
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Highest Accuracy</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(best_rotated_model) if rotated_models else ''}<span>{best_rotated_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{best_rotated_val:.1f}%" if rotated_models else "N/A"}</span>
+                                </li>
+                                <li class="py-4 flex justify-between items-center">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 mb-1">Fastest Processing</div>
+                                        <div class="text-sm text-gray-500 flex items-center">{get_provider_logo(fastest_rotated_model) if rotated_models else ''}<span>{fastest_rotated_model}</span></div>
+                                    </div>
+                                    <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">{f"{fastest_rotated_val:.2f}s" if rotated_models else "N/A"}</span>
                                 </li>
                             </ul>
                         </div>
@@ -558,6 +676,56 @@ def generate_html(comparison_data, orientation_data):
                 </div>
             </div>
 
+            <!-- Rotated Extraction Test Tab -->
+            <div class="tab-pane hidden" id="rotated-extraction" role="tabpanel">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Overall Accuracy</h5>
+                            <canvas id="rotatedExtractionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="p-6">
+                            <h5 class="text-base font-semibold mb-4 text-gray-900">Accuracy by Rotation</h5>
+                            <canvas id="rotatedRotationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header flex justify-between items-center">
+                        <span class="text-gray-900">Detailed Rotated Extraction Results</span>
+                        <button class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded text-sm font-medium transition-colors border border-gray-200" onclick="exportTable('rotatedExtractionTable', 'rotated_extraction_metrics.csv')">
+                            Export CSV
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="search-box mb-4">
+                            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-200 bg-white" id="rotatedExtractionSearch" placeholder="Search models..." onkeyup="filterTable('rotatedExtractionTable', 'rotatedExtractionSearch')">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full table" id="rotatedExtractionTable">
+                                <thead class="bg-gray-50 text-gray-900">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 0)">Rank <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 1)">Model <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 2)">Accuracy <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 3)">Successful/Total <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 4)">Mean Time (s) <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider sortable" onclick="sortTable('rotatedExtractionTable', 5)">Avg Tokens <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    {''.join(f'<tr class="hover:bg-gray-50 transition-colors cursor-pointer"><td class="px-4 py-3 whitespace-nowrap text-sm"><span class="rank-badge rank-{rotated_rankings.get(m, 0)}">{rotated_rankings.get(m, 0)}</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{get_provider_logo(m)}{m}</td><td class="px-4 py-3 whitespace-nowrap text-sm"><div class="h-1.5 bg-gray-100 rounded-full mb-1"><div class="h-1.5 bg-gray-600 rounded-full" style="width: {a}%"></div></div> <span class="text-gray-700">{a:.1f}%</span></td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{rotated_extraction_data.get("summary", {}).get(m, {}).get("successful_extractions", 0) if rotated_extraction_data else 0}/{rotated_extraction_data.get("summary", {}).get(m, {}).get("total_tests", 0) if rotated_extraction_data else 0}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{t:.2f}</td><td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{int(avg_tok) if avg_tok else "N/A"}</td></tr>' for m, a, t, avg_tok in zip(rotated_models, rotated_accuracies, rotated_avg_times, rotated_avg_tokens)) if rotated_extraction_data and rotated_models else ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Methodology Tab -->
             <div class="tab-pane hidden" id="methodology" role="tabpanel">
                 <div class="card">
@@ -566,7 +734,7 @@ def generate_html(comparison_data, orientation_data):
                     </div>
                     <div class="p-6">
                         <h5 class="text-base font-semibold mb-3 text-gray-900">Overview</h5>
-                        <p class="mb-6 text-gray-700 leading-relaxed">The i2d Arena is a comprehensive benchmarking platform designed to evaluate the capabilities of Large Language Models (LLMs) with vision capabilities in extracting structured data from document images, particularly invoices and receipts. The platform employs two complementary testing methodologies to assess different aspects of model performance.</p>
+                        <p class="mb-6 text-gray-700 leading-relaxed">The i2d Arena is a comprehensive benchmarking platform designed to evaluate the capabilities of Large Language Models (LLMs) with vision capabilities in extracting structured data from document images, particularly invoices and receipts. The platform employs three complementary testing methodologies to assess different aspects of model performance.</p>
                         
                         <hr class="my-8 border-gray-200">
                         
@@ -650,6 +818,56 @@ def generate_html(comparison_data, orientation_data):
                         
                         <hr class="my-8 border-gray-200">
                         
+                        <h5 class="text-base font-semibold mb-3 text-gray-900">3. Rotated Extraction Test</h5>
+                        
+                        <p class="mb-4 text-gray-700 leading-relaxed"><strong>Description:</strong> This test evaluates how accurately LLM models can extract structured data from document images that have been rotated to different orientations. Each test image is systematically rotated to four different angles (0°, 90°, 180°, 270°) and the model must extract the same structured information (company, date, address, total) from each rotated version. This test assesses the model's robustness in handling orientation variations while maintaining data extraction accuracy.</p>
+                        
+                        <p class="mb-3 text-gray-700"><strong>Purpose:</strong> Evaluate model performance in real-world scenarios where documents may be scanned or photographed at various angles. This test determines whether models can maintain high accuracy in data extraction regardless of image orientation, which is critical for automated document processing systems that receive images from various sources and orientations.</p>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Test Process:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li>Each test image is rotated to four different orientations: 0° (upright), 90° (clockwise), 180° (upside down), and 270° (counter-clockwise)</li>
+                            <li>For each rotated version, the model extracts the same four structured fields as in the As-is Data Extraction Test:
+                                <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                                    <li><strong>Company Name:</strong> The name of the business or vendor</li>
+                                    <li><strong>Date:</strong> The transaction or invoice date</li>
+                                    <li><strong>Address:</strong> The business address or location</li>
+                                    <li><strong>Total Amount:</strong> The total monetary value of the transaction</li>
+                                </ul>
+                            </li>
+                            <li>Models return structured JSON responses with the extracted fields for each rotation</li>
+                            <li>Results for each rotation are compared against the same ground truth data used in the As-is Data Extraction Test</li>
+                            <li>Accuracy is calculated separately for each rotation angle and then averaged to determine overall performance</li>
+                            <li>All models are tested using identical prompts and parameters to ensure fair comparison</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Evaluation Metrics:</h6>
+                        <ul class="list-disc list-inside mb-5 space-y-1.5 text-gray-700">
+                            <li><strong>Overall Accuracy:</strong> Average accuracy across all rotation angles, calculated as the mean of accuracies at 0°, 90°, 180°, and 270°</li>
+                            <li><strong>Accuracy by Rotation:</strong> Individual accuracy scores for each rotation angle (0°, 90°, 180°, 270°), allowing identification of which orientations are most challenging for each model</li>
+                            <li><strong>Field-level Accuracy:</strong> Per-field accuracy scores for each rotation, showing which fields are most affected by rotation</li>
+                            <li><strong>Successful Extractions:</strong> Number of successful extractions (no errors) versus total tests, indicating model reliability</li>
+                            <li><strong>Mean Processing Time:</strong> Average time taken to process each rotated image, measured in seconds</li>
+                            <li><strong>Token Usage:</strong> Average number of tokens consumed per rotated image test for cost and efficiency analysis</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Technical Implementation:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>Images are rotated in memory using PIL (Python Imaging Library) before being sent to the model</li>
+                            <li>Rotated images are encoded as base64 data URLs for transmission to the LLM API</li>
+                            <li>The same ground truth data is used for all rotations of the same image, ensuring consistent evaluation</li>
+                            <li>Accuracy calculation uses the same matching logic as the As-is Data Extraction Test (exact match, partial match, no match)</li>
+                            <li>Results are aggregated per model and per rotation angle for comprehensive analysis</li>
+                        </ul>
+                        
+                        <h6 class="text-sm font-semibold mb-2 text-gray-800">Accuracy Calculation:</h6>
+                        <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
+                            <li>For each rotated image, accuracy is calculated using the same field-level matching logic as the As-is Data Extraction Test</li>
+                            <li>Overall accuracy for a model = Average of (accuracy at 0° + accuracy at 90° + accuracy at 180° + accuracy at 270°)</li>
+                            <li>Rotation-specific accuracy = (Number of correctly extracted fields at that rotation) / (Total fields × Number of images)</li>
+                            <li>This allows identification of whether certain rotations (e.g., 180° upside down) are more challenging than others</li>
+                        </ul>
+                        
                         <hr class="my-8 border-gray-200">
                         
                         <h5 class="text-base font-semibold mb-3 text-gray-900">Data Structure & Ground Truth</h5>
@@ -661,7 +879,7 @@ def generate_html(comparison_data, orientation_data):
   "address": "Full Address",
   "total": "Amount"
 }}</code></pre>
-                        <p class="mb-4 text-gray-700 text-sm">The ground truth files are manually verified to ensure accuracy. For the Orientation Extraction Test, the ground truth is the known rotation angle applied to each image (0°, 90°, 180°, or 270°).</p>
+                        <p class="mb-4 text-gray-700 text-sm">The ground truth files are manually verified to ensure accuracy. For the Orientation Extraction Test, the ground truth is the known rotation angle applied to each image (0°, 90°, 180°, or 270°). For the Rotated Extraction Test, the same ground truth JSON structure is used for all rotations of each image.</p>
                         
                         <h6 class="text-sm font-semibold mb-2 text-gray-800">Supported Image Formats:</h6>
                         <ul class="list-disc list-inside mb-8 space-y-1.5 text-gray-700">
@@ -1024,6 +1242,118 @@ def generate_html(comparison_data, orientation_data):
             }}
         }});
         
+        // Rotated Extraction Chart
+        const ctxRotExt = document.getElementById('rotatedExtractionChart');
+        if (ctxRotExt) {{
+            const rotatedExtractionChart = new Chart(ctxRotExt.getContext('2d'), {{
+                type: 'bar',
+                data: {{
+                    labels: {json.dumps(rotated_models)},
+                    datasets: [{{
+                        label: 'Rotated Extraction Accuracy (%)',
+                        data: {json.dumps(rotated_accuracies)},
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }}]
+                }},
+                options: {{
+                    responsive: chartOptions.responsive,
+                    maintainAspectRatio: chartOptions.maintainAspectRatio,
+                    plugins: chartOptions.plugins,
+                    animation: chartOptions.animation,
+                    interaction: chartOptions.interaction,
+                    scales: {{ 
+                        y: {{ 
+                            beginAtZero: true, 
+                            max: 100,
+                            ticks: {{
+                                callback: function(value) {{
+                                    return value + '%';
+                                }}
+                            }}
+                        }} 
+                    }}
+                }}
+            }});
+        }}
+        
+        // Rotated Rotation Accuracy Chart
+        const ctxRotRot = document.getElementById('rotatedRotationChart');
+        if (ctxRotRot) {{
+            const rotatedRotationChart = new Chart(ctxRotRot.getContext('2d'), {{
+                type: 'bar',
+                data: {{
+                    labels: {json.dumps(rotated_models)},
+                    datasets: [
+                        {{
+                            label: '0°',
+                            data: {json.dumps(rotated_rotation_accuracies[0])},
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }},
+                        {{
+                            label: '90°',
+                            data: {json.dumps(rotated_rotation_accuracies[90])},
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }},
+                        {{
+                            label: '180°',
+                            data: {json.dumps(rotated_rotation_accuracies[180])},
+                            backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        }},
+                        {{
+                            label: '270°',
+                            data: {json.dumps(rotated_rotation_accuracies[270])},
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }}
+                    ]
+                }},
+                options: {{
+                    responsive: chartOptions.responsive,
+                    maintainAspectRatio: chartOptions.maintainAspectRatio,
+                    plugins: {{
+                        legend: chartOptions.plugins.legend,
+                        tooltip: {{
+                            backgroundColor: chartOptions.plugins.tooltip.backgroundColor,
+                            padding: chartOptions.plugins.tooltip.padding,
+                            titleFont: chartOptions.plugins.tooltip.titleFont,
+                            bodyFont: chartOptions.plugins.tooltip.bodyFont,
+                            borderColor: chartOptions.plugins.tooltip.borderColor,
+                            borderWidth: chartOptions.plugins.tooltip.borderWidth,
+                            cornerRadius: chartOptions.plugins.tooltip.cornerRadius,
+                            displayColors: chartOptions.plugins.tooltip.displayColors,
+                            callbacks: {{
+                                label: function(context) {{
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                                }}
+                            }}
+                        }}
+                    }},
+                    animation: chartOptions.animation,
+                    interaction: chartOptions.interaction,
+                    scales: {{ 
+                        y: {{ 
+                            beginAtZero: true, 
+                            max: 100,
+                            ticks: {{
+                                callback: function(value) {{
+                                    return value + '%';
+                                }}
+                            }}
+                        }} 
+                    }}
+                }}
+            }});
+        }}
+        
         // Table sorting function
         let sortDirection = {{}};
         function sortTable(tableId, columnIndex, initialDirection = null) {{
@@ -1127,6 +1457,11 @@ def generate_html(comparison_data, orientation_data):
             if (orientationTable) {{
                 sortTable('orientationTable', 0, true); // true = ascending (1, 2, 3...)
             }}
+            
+            // Sort rotated extraction table by rank on load
+            if (document.getElementById('rotatedExtractionTable')) {{
+                sortTable('rotatedExtractionTable', 0, true); // true = ascending (1, 2, 3...)
+            }}
         }});
     </script>
     
@@ -1149,23 +1484,25 @@ def generate_html(comparison_data, orientation_data):
 def main():
     # Compile results first
     try:
-        from compile_results import compile_comparison_results, compile_orientation_results
+        from compile_results import compile_comparison_results, compile_orientation_results, compile_rotated_extraction_results
         print("Compiling results from results/ directory...")
         compile_comparison_results()
         compile_orientation_results()
+        compile_rotated_extraction_results()
     except ImportError:
         print("Warning: Could not import compile_results. Using existing JSON files.")
 
     # Load data
     comparison_data = load_json('model_comparison_report.json')
     orientation_data = load_json('orientation_test_results.json')
+    rotated_extraction_data = load_json('rotated_extraction_test_results.json')
     
-    if not comparison_data and not orientation_data:
-        print("Error: No data files found (model_comparison_report.json or orientation_test_results.json)")
+    if not comparison_data and not orientation_data and not rotated_extraction_data:
+        print("Error: No data files found (model_comparison_report.json, orientation_test_results.json, or rotated_extraction_test_results.json)")
         return
 
     # Generate HTML
-    html = generate_html(comparison_data, orientation_data)
+    html = generate_html(comparison_data, orientation_data, rotated_extraction_data)
     
     # Save HTML
     output_file = 'index.html'
