@@ -1,0 +1,444 @@
+{
+  "model": "Claude-haiku-4-5",
+  "timestamp": "2025-11-23T18:39:24.323464",
+  "total_images": 30,
+  "successful": 30,
+  "failed": 0,
+  "processing_time": 23.960922479629517,
+  "metrics": {
+    "success_rate": 1.0,
+    "average_processing_time": 7.442430845896403,
+    "total_processing_time": 23.960922479629517,
+    "overall_accuracy": 0.7083333333333334,
+    "field_statistics": {
+      "company": {
+        "total": 30,
+        "exact_matches": 0,
+        "partial_matches": 26,
+        "no_matches": 4,
+        "exact_match_rate": 0.0,
+        "partial_match_rate": 0.8666666666666667,
+        "no_match_rate": 0.13333333333333333
+      },
+      "date": {
+        "total": 30,
+        "exact_matches": 0,
+        "partial_matches": 27,
+        "no_matches": 3,
+        "exact_match_rate": 0.0,
+        "partial_match_rate": 0.9,
+        "no_match_rate": 0.1
+      },
+      "address": {
+        "total": 30,
+        "exact_matches": 0,
+        "partial_matches": 2,
+        "no_matches": 28,
+        "exact_match_rate": 0.0,
+        "partial_match_rate": 0.06666666666666667,
+        "no_match_rate": 0.9333333333333333
+      },
+      "total": {
+        "total": 30,
+        "exact_matches": 0,
+        "partial_matches": 30,
+        "no_matches": 0,
+        "exact_match_rate": 0.0,
+        "partial_match_rate": 1.0,
+        "no_match_rate": 0.0
+      }
+    }
+  },
+  "results": [
+    {
+      "image_path": "images\\000.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Header\n**tan chay yee**\n\n***** COPY *****\nOJC MARKETING SDN BHD\nROC NO: 538358-H\n\nNO 2 & 4, JALAN BAYU 4,\nBANDAR SERI ALAM,\n81750 MASAI, JOHOR\n\nTel: 07-388 2218  Fax: 07-388 8218\nEmail: ng@ojcgroup.com\n\n---\n\n## TAX INVOICE\n\n| Field | Details |\n|-------|---------|\n| Invoice No | PEGIV-1030765 |\n| Date | 15/01/2019 11:05:16 AM |\n| Cashier | NG CHUAN MIN |\n| Sales Person | FATIN |\n| Bill To | THE PEAK QUARRY WORKS |\n| Address | :. |\n\n---\n\n## Item Details\n\n| Description | Qty | Price | Amount |\n|-------------|-----|-------|--------|\n| 000000111 KINGS SAFETY SHOES KWD 805 | 1 | 193.00 | 193.00 SR |\n\n---\n\n## Totals\n\n- **Qty: 1**\n- Total Exclude GST: 193.00\n- Total GST @6%: 0.00\n- Total Inclusive GST: 193.00\n- Round Amt: 0.00\n\n**TOTAL: 193.00**\n\n---\n\n## Payment Method\n**VISA CARD** - 193.00\n- Card Number: xxxxxxxx4318\n- Approval Code: 000\n\n*(Amount 193.00 circled in handwriting)*\n\n---\n\n## Footer\n\"Goods Sold Are Not Returnable & Refundable\"\n\"****Thank You. Please Come Again.****\"",
+      "ground_truth_path": "gdt\\000.json",
+      "ground_truth": {
+        "company": "OJC MARKETING SDN BHD",
+        "date": "15/01/2019",
+        "address": "NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, B1750 MASAI, JOHOR",
+        "total": "193.00"
+      },
+      "processing_time": 9.709009408950806,
+      "error": null
+    },
+    {
+      "image_path": "images\\001.jpg",
+      "transcription": "# Cash Bill Receipt Transcription\n\n## Header Information\n- **Business Name**: tan chay yee\n- **Company**: OJC MARKETING SDN BHD\n- **ROC NO**: 538358-H\n- **Address**: NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, 81750 MASAI, JOHOR\n- **Contact**: Tel: 07-388 2218 | Fax: 07-388 8218\n- **Email**: ng@ojcgroup.com\n\n## Receipt Details\n- **Invoice No**: PEGIV-1030531\n- **Date**: 02/01/2019 2:47:14 PM\n- **Cashier**: RHYS TAN\n- **Sales Person**: FATIN\n\n## Transaction Details\n\n| Item | Description | Qty | Price | Amount |\n|------|-------------|-----|-------|--------|\n| 00000111 | KINGS SAFETY SHOES KWD 905 P004 | 1 | 170.00 | 170.00 |\n\n## Totals\n- **Total Item Discount**: 0.00\n- **Total Amount**: 170.00\n- **Round Amount**: 0.00\n- **TOTAL**: 170.00\n\n## Payment Method\n- **VISA CARD**: 170.00\n- **Card Reference**: xxxxxxxxxxxxx318\n- **Approval Code**: 123\n\n## Footer Note\n*Goods Sold Are Not Returnable & Refundable*\n*Thank You. Please Come Again.*\n\n**Handwritten notation**: 170.00 (circled)",
+      "ground_truth_path": "gdt\\001.json",
+      "ground_truth": {
+        "company": "OJC MARKETING SDN BHD",
+        "date": "02/01/2019",
+        "address": "NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, 81750 MASAI, JOHOR",
+        "total": "170.00"
+      },
+      "processing_time": 7.062463045120239,
+      "error": null
+    },
+    {
+      "image_path": "images\\002.jpg",
+      "transcription": "# Detailed Transcription of Simplified Tax Invoice\n\n## Header Information\n- **Company Name:** PERNIAGAAN ZHENG HUI\n- **Registration Number:** JM0328355-V\n- **Address:** NO.50 JALAN PERMAS 9/5, BANDAR BARU PERMAS JAYA, 81750 JOHOR BAHRU\n- **Contact:** TEL: 07-386 7524 | FAX: 07-388 3793\n- **GST Number:** 000800589824\n\n## Document Details\n- **Document Type:** SIMPLIFIED TAX INVOICE\n- **Sold To:** GOGIANT ENGINEERING (M) SDN BHD\n- **Receipt #:** CS00082258\n- **Date:** 09/02/2018\n- **Time:** 08:32:00\n- **Salesperson/Cashier:** USER\n\n## Itemized List\n\n| Item Code | Description | Qty | Unit Price (RM) | Amount (RM) |\n|-----------|-------------|-----|-----------------|-------------|\n| 6763 | SR: CERAMIC CAP | 5 | 3.50 | 17.50 |\n| 1804 | SR: S/STEEL 1/2\" STREET ELBOW | 30 | 3.80 | 114.00 |\n| 1760 | SR: 2.4MM STARWELD RED HEAD TUNGSTEN ROD | 1 | 55.00 | 55.00 |\n| 3498 | SR: ESICUT 4\" CUTTING DISC (1BOX)-50PCS | 3 | 33.00 | 99.00 |\n| 2480 | SR: WELDRO PICKLING GEL 1KG | 2 | 43.00 | 86.00 |\n| 9428 | SR: 13.5\" WELDING GLOVE - GREEN (QS) | 4 | 10.00 | 40.00 |\n\n## Financial Summary\n- **Total Quantity:** 45 units\n- **Subtotal (Excl. GST):** RM 411.50\n- **Discount:** RM 0.00\n- **GST (6%):** RM 24.69\n- **Rounding:** RM 0.01\n- **Total Amount:** RM 436.20\n- **Payment Method:** CASH\n- **Change:** RM 0.00\n\n## GST Summary\n- Tax Code: SR (6%)\n- Taxable Amount: RM 411.50\n- GST Collected: RM 24.69\n\n## Footer Note\n\"GOODS SOLD ARE NOT RETURNABLE. THANK YOU.\"",
+      "ground_truth_path": "gdt\\002.json",
+      "ground_truth": {
+        "company": "PERNIAGAAN ZHENG HUI",
+        "date": "09/02/2018",
+        "address": "NO.59 JALAN PERMAS 9/5 BANDAR BARU PERMAS JAYA 81750 JOHOR BAHRU",
+        "total": "436.20"
+      },
+      "processing_time": 10.064235210418701,
+      "error": null
+    },
+    {
+      "image_path": "images\\003.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Business Header\n**PETRON BKT LANJAN SB**\n**ALSERKAM ENTERPRISE**\n- Tel: 03-6156 8757\n- Co No: 001083069-M\n- KM 456.4 BKT LANJAN UTARA, L/RAYA UTARA SELATAN, SG BULOH 47000 SUNGAI BUL\n- GST ID No: 001210736640\n\n## Invoice Details\n**TAX INVOICE**\n- Invoice No: 19729058\n- POS: 1\n- Store No: 129077\n- Date/Time: 01/02/2018 4:43:17 PM\n- Cashier: Babu\n\n## Items Purchased\n| Item | Quantity | Price |\n|------|----------|-------|\n| Double mint te | 2 | 3.00 |\n| Sandwich vanill | 1 | 1.90 |\n\n## Payment Summary\n- GST (RM): 0.28\n- Total RM inc. GST: 4.90\n- **Cash Paid: 5.00**\n- **Change: 0.10**\n\n## GST Summary\n- A=6.00%\n- Amount (RM): 4.62\n- Tax (RM): 0.28\n- **Total includes 6.00% GST**\n\n## Footer\n\"Use 3000 Petron Miles points to pay for RM45 Fuel\"",
+      "ground_truth_path": "gdt\\003.json",
+      "ground_truth": {
+        "company": "PETRON BKT LANJAN SB",
+        "date": "01/02/2018",
+        "address": "KM 458.4 BKT LANJAN UTARA, L/RAYA UTARA SELATAN,SG BULOH 47000 SUNGAI BUL",
+        "total": "4.90"
+      },
+      "processing_time": 8.540806293487549,
+      "error": null
+    },
+    {
+      "image_path": "images\\004.jpg",
+      "transcription": "# Receipt Transcription\n\n**Header:**\n- Document number: 190\n- Red handwritten notation at top\n\n**Restaurant Information:**\n- Gerbang Alaf Restaurants Sdn Bhd (6535I-M)\n- Formerly known as Golden Arches Restaurants Sdn Bhd\n- Licensee of McDonald's\n- Location: Level 6, Bangunan TH, Damansara Uptown3, No.3, Jalan SS21/39, 47400 Petaling Jaya, Selangor\n- GST ID No.: 000504666404\n- McDonald's Petronas Taman Melati DT\n- Tel No.: 03-4147-3107\n\n**Transaction Details:**\n- Type: TAX INVOICE\n- MFY Side 1\n- Invoice #: 141900016842\n- Order #90, Register #19\n- Date/Time: 18/01/2018 17:09:21\n\n**Items Ordered:**\n| Quantity | Item | Total |\n|----------|------|-------|\n| 2 | M SpicyDeluxe | 25.40 |\n| 2 | M Coke | |\n| 2 | M Fries | |\n| 1 | M GrillChicBgr | 12.50 |\n| 1 | M Coke | |\n| 1 | M Fries | |\n| 1 | Small Cone | 1.00 |\n\n**Pricing Summary:**\n- TakeOut Total (incl GST): 38.90\n- Total Rounded: 38.90\n- Cash Tendered: 50.00\n- Change: 11.10\n- GST Included (6%): 2.20\n\n**Footer:**\n- Feedback invitation with website: www.mcdfeedback.com.my\n- Option to download My McD Feedback app\n- Thank you message\n- Customer Service Hotline: 03-2726-5600",
+      "ground_truth_path": "gdt\\004.json",
+      "ground_truth": {
+        "company": "GERBANG ALAF RESTAURANTS SDN BHD",
+        "date": "18/01/2018",
+        "address": "LEVEL 6, BANGUNAN TH, DAMANSARA UPTOWN3 NO.3, JALAN SS21/39,47400 PETALING JAYA SELANGOR",
+        "total": "38.90"
+      },
+      "processing_time": 7.88959527015686,
+      "error": null
+    },
+    {
+      "image_path": "images\\005.jpg",
+      "transcription": "# Tax Invoice - Detailed Description\n\n## Business Information\n- **Company Name:** SIN LIANHAP SDN BHD\n- **Locations:** \n  - Lot 13, Jalan\n  - Lot 13, Jalan Ipoh, KG Batu 30, Ulu Yam Lama, 44300 BTG Kali, Selangor\n- **Contact:** Tel: 03-60752222 (Hunting Line), Fax: 03-60752572\n- **Company Registration No:** 264922-D\n- **GST Registration No:** 001610833920\n\n## Invoice Details\n- **Invoice Number:** H0003939\n- **Date:** 05/02/2018\n- **Customer Type:** Cash Customer\n- **Total Items:** 2\n\n## Itemized Sales\n1. **PPD 4MM DENLIME**\n   - Quantity: 1.000 PC\n   - Unit Price: RM 1.887\n   - Code: SR\n   - Line Total: RM 2.00\n\n2. **6023# GARDEN**\n   - Quantity: 1.000 PC\n   - Unit Price: RM 5.000\n   - Code: SR\n   - Line Total: RM 5.30\n\n## Financial Summary\n- **Subtotal:** RM 7.30\n- **GST (6%):** RM 0.41\n- **Total Sales (Excluding GST):** RM 6.89\n- **Total Sales (Inclusive of GST):** RM 7.30\n- **Rounding Adjustment:** RM 0.00\n- **Payment:** RM 7.30\n- **Change Due:** RM 0.00\n\n## Footer\n- Red company stamp/seal visible\n- \"THANK YOU\" and \"PLEASE COME AGAIN\" message at bottom",
+      "ground_truth_path": "gdt\\005.json",
+      "ground_truth": {
+        "company": "SIN LIANHAP SDN BHD",
+        "date": "05/02/2018",
+        "address": "LOT 13, JALAN IPOH, KG BATU 30, ULU YAM LAMA 44300 BTG KALI, SELANGOR.",
+        "total": "7.30"
+      },
+      "processing_time": 7.03463339805603,
+      "error": null
+    },
+    {
+      "image_path": "images\\006.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Company Header\n**CROSS CHANNEL NETWORK SDN. BHD.**\n- Address: 47, Jalan Meranti 1, Sek. 3, Bandar Utama Batang Kali, 43300 Batang Kali, Selangor\n- Tel: 03-6057 9688\n- Fax: 03-6057 9678\n- GST ID: 001151500288\n\n## Invoice Details\n- **Invoice Number**: BTG-052332\n- **Date/Time**: 29/01/2018 4:40:40 PM\n\n## Item Purchased\n| Description | Qty | Price (RM) | Tax (SR) |\n|---|---|---|---|\n| SCHNEIDER E15R 13A SWITCH SOCKET OUTLET @ 6.0000 | 1 | 6.36 | SR |\n\n## Financial Summary\n- **Total Amount Incl. GST @ 6%**: RM 6.36\n- **Rounding Adjustment**: -RM 0.01\n- **Total Amount Payable**: RM 6.35\n- **Paid Amount**: RM 10.00\n- **Change**: RM 3.65\n- **Total Qty Tender**: 1.00\n\n## GST Summary\n| Category | Amount (RM) | Tax (RM) |\n|---|---|---|\n| SR @ A | 6.00 | 0.36 |\n| **Total** | **6.00** | **0.36** |\n\n## Footer\n- **THANK YOU**\n- \"Goods sold are not refundable nor exchangeable.\"\n- For enquiries: gowa9688@gmail.com",
+      "ground_truth_path": "gdt\\006.json",
+      "ground_truth": {
+        "company": "CROSS CHANNEL NETWORK SDN. BHD.",
+        "date": "29/01/2018",
+        "address": "47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.",
+        "total": "6.35"
+      },
+      "processing_time": 7.987616062164307,
+      "error": null
+    },
+    {
+      "image_path": "images\\007.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Company Header\n**CROSS CHANNEL NETWORK SDN. BHD.**\n47, JALAN MERANTI 1, SEK. 3,\nBANDAR UTAMA BATANG KALI,\n44300 BATANG KALI, SELANGOR.\n\nTel: 03-6057 9688 | Fax: 03-6057 9678\nGST ID: 001151500288\n\n---\n\n## Invoice Details\n**Invoice No:** BTG-050036\n\n| Item | Qty | RM | Tax |\n|------|-----|----|----|\n| 20MM HERO PVC CONDUIT PIPE @ 1.7000 | 1 | 1.80 | SR |\n| 15A PVC CONNECTOR @ 1.8000 | 1 | 1.91 | SR |\n| R & B-C/CLIP 8MM X 100PCS CABLE CLIPS @ 3.5000 | 1 | 3.71 | SR |\n| 3\" X 3\" 2862 A1 PVC NUT BOX @ 0.5000 | 1 | 0.53 | SR |\n\n---\n\n## Financial Summary\n- **Total Amt Incl. GST @ 6%:** RM 7.95\n- **Rounding Adjustment:** —\n- **Total Amt Payable:** RM 7.95\n- **Paid Amount:** RM 10.00\n- **Change:** RM 2.05\n- **Total Qty Tender:** 4.00\n\n### GST Summary\n| | Amount (RM) | Tax (RM) |\n|---|---|---|\n| SR @ A | 7.50 | 0.45 |\n| **Total** | **7.50** | **0.45** |\n\n---\n\n## Footer\n**THANK YOU**\n\nFor any enquiry, please e-mail us: gowa9688@gmail.com\n\n**Date/Time:** 31/12/2017 10:33:59 AM",
+      "ground_truth_path": "gdt\\007.json",
+      "ground_truth": {
+        "company": "CROSS CHANNEL NETWORK SDN. BHD.",
+        "date": "31/12/2017",
+        "address": "47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.",
+        "total": "7.95"
+      },
+      "processing_time": 9.023102521896362,
+      "error": null
+    },
+    {
+      "image_path": "images\\008.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Business Information\n**SWC ENTERPRISE SDN BHD**\n- Registration: (1125830-V)\n- Address: No. 5-7, Jalan Mahagoni 7/1, Sekysen 4, Bandar Utama, 44300 Batang Kali, Selangor\n- Phone: 03-6057 1377\n- GST ID No.: 002017808384\n\n## Invoice Details\n- **Date:** 08/01/2018\n- **Time:** 11:07:06\n- **Cashier:** 123\n- **Invoice No:** 0100080332\n\n## Transaction Details\n\n| Item/Description | Qty | Price | Amount |\n|---|---|---|---|\n| 20X30 BEG 1KG91X30) 20X30 1KG | 1 | 8.00 | 8.00 |\n| **Total Qty:** | **1** | | |\n\n## Payment Summary\n- **Total Amount:** 8.00\n- **Cash Paid:** 10.00\n- **Change:** 2.00\n- **GST (6% Included in Total):** 0.45\n\n## Footer Message\n\"Thank You! Please Come Again!\nGoods Sold Only Exchangeable Within 3 Days!\"",
+      "ground_truth_path": "gdt\\008.json",
+      "ground_truth": {
+        "company": "SWC ENTERPRISE SDN BHD",
+        "date": "08/01/2018",
+        "address": "NO. 5-7, JALAN MAHAGONI 7/1, SEKYSEN 4, BANDAR UTAMA, 44300 BATANG KALI, SELANGOR.",
+        "total": "8.00"
+      },
+      "processing_time": 7.557196140289307,
+      "error": null
+    },
+    {
+      "image_path": "images\\009.jpg",
+      "transcription": "# Receipt Description\n\nThis is a credit note/receipt from **Lightroom Gallery SDN BHD**, a lighting fixture retailer located in Bandar Bukit Raja, Klang Selangor, Malaysia.\n\n## Header Information\n- **Company**: Lightroom Gallery SDN BHD\n- **Address**: No. 28, Jalan Astana 1C, Bandar Bukit Raja, 41050, Klang Selangor D.E., Malaysia\n- **ROC No**: (1072825-A)\n- **GST No**: 000584089600\n- **Contact**: Tel: 03-3362 4395, Fax: 03-3362 4395\n\n## Transaction Details\n- **Station**: Cashier\n- **Cashier Name**: Angela\n- **C/N No**: LCN00212\n- **Bill Date**: 20/11/2017\n- **Bill Start Time**: 20/11/2017 03:57:01 PM\n- **Closed Bill**: 20/11/2017 04:01:23 PM\n- **Code**: 300-E0009\n- **Name**: ESWARAN 012-6369400\n\n## Items Purchased\n1. **YT51129** - VE36 BK 12W WW LED TRACK LIGHT (2 units @ RM 45.29) = RM 90.57\n2. **YT52683** - YE44 35W WW BK TRACK HOLDER (1 unit @ RM 155.66) = RM 155.66\n3. **CH50688** - 1METER TRACK-BK (1 unit @ RM 16.99) = RM 16.79\n4. **Contra** - RM39.80 CONTRA W LCN00211\n\n## Financial Summary\n- **Sub Total**: RM 263.02\n- **Item Discount**: RM 0.20\n- **Service Charge**: RM 0.00\n- **GST/TAX 6%**: RM 15.78\n- **Total**: RM 278.80\n- **Cash Paid**: RM 278.80\n- **Change**: RM 0.00\n\n## Additional Information\n- **Item Count**: 4\n- **Qty Count**: 4.0\n- **Bank Account Details** (for transfers):\n  - MBB 5128 4851 2118\n  - MBB 5626 4732 1144\n  - AMBANK 888 100 123 3706\n\n- **GST Summary**:\n  - SR @ 6%: RM 263.02 (Tax: RM 15.78)\n  - ZR/OS/EZ: RM 0.00\n\n**Closing message**: \"Thank you, Please come again. Goods Sold are not refundable, returnable\"",
+      "ground_truth_path": "gdt\\009.json",
+      "ground_truth": {
+        "company": "LIGHTROOM GALLERY SDN BHD",
+        "date": "20/11/2017",
+        "address": "NO: 28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E, MALAYSIA",
+        "total": "278.80"
+      },
+      "processing_time": 11.553067445755005,
+      "error": null
+    },
+    {
+      "image_path": "images\\010.jpg",
+      "transcription": "# Receipt Transcription\n\n**Store Information:**\n- 99 SPEED MART S/B (519537-X)\n- LOT P.T. 2811, JALAN ANGSA,\n- TAMAN BERKELEY\n- 41150 KLANG, SELANGOR\n- 1413-SETIA ALAM 1\n- GST ID. NO: 000101747712\n\n**Transaction Details:**\n- Invoice No: 10232/102/T0341\n- Time: 03:29PM\n- Date: 20-11-17\n- Receipt No: 560736\n\n**Items Purchased:**\n1. 2973 FLOIBSURE COMPLETE 5/6 - RM117.90\n2. 089 WILD SWD - RM34.90\n3. 2709 ZING HEIRG OAT & WHEAT - RM4.10\n4. 2893 DISNEY DS112 WIDE NECK - RM3.89\n5. 4385 JOHNSONS PWS.5 2IN1 BC - RM3.99\n\n**Payment Summary:**\n- Total Sales (Inclusive GST): RM169.76\n- Rounding Adjustment: .02\n- Rounding RM: 169.80\n- Cash RM: 200.00\n- Change RM: 30.20\n\n**GST Summary:**\n- Amount (RM): 160.17\n- Tax (RM): 9.61\n\n**Footer Message:**\n\"Thank You. Please come again\nKeep the invoice for applicable returns\"",
+      "ground_truth_path": "gdt\\010.json",
+      "ground_truth": {
+        "company": "99 SPEED MART S/B",
+        "date": "20-11-17",
+        "address": "LOT P.T. 2811, JALAN ANGSA, TAMAN BERKELEY 41150 KLANG, SELANGOR 1413-SETIA ALAM 2",
+        "total": "169.80"
+      },
+      "processing_time": 11.826904058456421,
+      "error": null
+    },
+    {
+      "image_path": "images\\011.jpg",
+      "transcription": "# Parking Receipt Transcription\n\n**Document Number:** 3180301\n\n## Business Information\n- **Company:** SECURE PARKING CORPORATION S/B\n- **Location:** Riverwalk Village, Batu 3, Jalan Ipoh, 51200 KL\n- **GST No.:** 000296692800\n- **Tel No.:** 1300881698\n- **Receipt:** C13\n\n## Transaction Details\n**Receipt Number:** K0131800235697\n\n**Entry Time:** 23.03.18 at 14:59\n**Exit Time:** 23.03.18 at 15:27\n**Parking Duration:** 0 hours 28 minutes (0:00:28)\n\n## Payment Breakdown\n**Kind of Payment:** CASH\n\n| Item | Amount (RM) |\n|------|-------------|\n| Parking Fee | 0.94 |\n| Add GST | 0.06 |\n| **Amount Due (*)** | **1.00** |\n\n*Rate includes 6% GST\n\n## Footer\n\"THANK YOU FOR YOUR VISIT\"",
+      "ground_truth_path": "gdt\\011.json",
+      "ground_truth": {
+        "company": "SECURE PARKING CORPORATION S/B",
+        "date": "23.03.18",
+        "address": "RIVERWALK VILLAGE BATU 3, JALAN IPOH 51200 KL.",
+        "total": "1.00"
+      },
+      "processing_time": 4.021186351776123,
+      "error": null
+    },
+    {
+      "image_path": "images\\012.jpg",
+      "transcription": "# Receipt Transcription - Lightroom Gallery SDN BHD\n\n## Header Information\n- **Store:** Lightroom Gallery SDN BHD\n- **Address:** No. 28, Jalan Astana 1C, Bandar Bukit Raja, 41050 Klang Selangor D.E., Malaysia\n- **ROC No.:** (1072825-A)\n- **GST No.:** 000584089600\n- **Phone/Fax:** Tel: 03-3362 4395 Fax: 03-3362 4395\n\n## Transaction Details\n- **Station:** CASHIER\n- **Cashier Name:** ANGELA\n- **C/N No.:** LCN00212\n- **Cover:** 1\n- **Bill Date:** 20/11/2017\n- **Bill Start Time:** 20/11/2017 03:57:01 PM\n- **Bill Code:** 300-E0009\n- **Item Name:** ESWARAN 012-6369400\n\n## Items Purchased (Qty: 4.0)\n1. **YT51129** - VF36 BK 12W WW LED TRACK LIGHT - RM 90.57\n2. **YT52683** - YB44 35W WW BK TRACK HOLDER - RM 155.66\n3. **CH50688** - 1METER TRACK-BK - RM 16.79\n4. **RM39.80 CONTRA W LCN00211** - Credit note\n\n## Pricing Summary\n- **Sub Total:** RM 263.02\n- **Item Discount:** RM 0.20\n- **Service Charge:** RM 0.00\n- **GST/TAX 6%:** RM 15.78\n- **Total:** RM 278.80\n- **Cash Paid:** RM 278.80\n- **Change:** RM 0.00\n\n## GST Summary\n- SR @ 6%: RM 263.02 (Tax: RM 15.78)\n- ZR/OS/EZ: RM 0.00 (Tax: RM 0.00)\n\n## Footer Information\n- **Closed Bill Time:** 20/11/2017 04:01:23 PM\n- **Bank Accounts Listed:** MBB 5128 4851 2118 | MBB 5626 4732 1744 | AMBANK 888 100 123 3706\n- **Note:** \"Thank You, Please come again. Goods Sold are not refundable, returnable\"",
+      "ground_truth_path": "gdt\\012.json",
+      "ground_truth": {
+        "company": "LIGHTROOM GALLERY SDN BHD",
+        "date": "20/11/2017",
+        "address": "NO: 28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E, MALAYSIA",
+        "total": "278.80"
+      },
+      "processing_time": 9.517096281051636,
+      "error": null
+    },
+    {
+      "image_path": "images\\013.jpg",
+      "transcription": "# Receipt Transcription - Oldtown White Coffee\n\n## Header Information\n- **Establishment:** OLDTOWN WHITE COFFEE\n- **Business Address:** Old Town Kopitiam Sdn Bhd (716269-X), Sri Rampai\n- **Phone:** 03-4148 1876\n- **Document Type:** Guest Check (NOT A RECEIPT)\n- **GST ID:** 000801587200\n\n## Transaction Details\n- **Location:** 4 COUNTER3\n- **Cashier/Terminal:** 2009 LIZA\n- **Check Number:** 37617\n- **Cover Count:** 1\n- **Date & Time:** 22 Mar 18, 12:44:00 PM\n- **Table:** 5/1\n- **Service Type:** Dine In\n\n## Items Ordered\n1. ST30 - 13.87 S\n2. BR10 Stm Ginger R - S\n3. TF2 (H) Teh Tarik - S\n4. HS4 - 12.07 S\n5. SN5 Curry Mee - S\n6. TF7 (C) Lemon T - S\n\n## Bill Breakdown\n- **Subtotal:** 25.94 RM\n- **Service Charge (10%):** 2.59 RM\n- **GST @6%:** 1.71 RM\n- **Total:** 30.24 RM\n- **Rounding:** 0.01 RM\n- **Amount Due:** 30.25 RM (INCLUSIVE)\n- **Outstanding Balance:** 0.00 RM\n\n## Footer Information\n- **Storage Time:** 3004 STORED 22 Mar 18 02:10:50 PM\n- **GST Summary:** S-GST @6% = 28.53 RM (1.71 GST); Z-GST @0% = 0.00 RM (0.00 GST)\n- **Closing Message:** \"THANK YOU, PLEASE COME AGAIN\"\n\n## Additional Notes\n- Handwritten notations visible: \"SL LEZ\" at top and \"xW\" at bottom\n- Receipt appears slightly worn/aged",
+      "ground_truth_path": "gdt\\013.json",
+      "ground_truth": {
+        "company": "OLD TOWN KOPITAM SND BHD",
+        "date": "22 MAR 18",
+        "address": "SRI RAMPAI",
+        "total": "30.25"
+      },
+      "processing_time": 7.4334681034088135,
+      "error": null
+    },
+    {
+      "image_path": "images\\014.jpg",
+      "transcription": "# Receipt Transcription - Uroko Japanese Cuisine\n\n## Restaurant Information\n**UROKO JAPANESE CUISINE SDN BHD**\n- Address: 22A-1, Jalan 17/54, Section 17, 46400 Petaling Jaya, Selangor\n- Phone: 03-7932 1023/0191\n- GST Reg No: 001126838272\n\n## Transaction Details\n- **Bill No:** 01H-25029\n- **Date:** 20/03/2018 6:41:02 PM\n- **Cashier:** RESAN\n- **Table No:** S09\n\n## Items Ordered\n| Qty | Description | Amount |\n|-----|-------------|--------|\n| 1 | KO NABE INANIWA UDON @ 24.00 | 24.00 SR |\n| 1 | GREEN TEA @ 1.00 | 1.00 SR |\n| 1 | GYOZA 5pcs @ 15.00 | 15.00 SR |\n| 1 | GARLIC CHAHAN @ [T A] | 6.00 SR |\n\n## Billing Summary\n- **Subtotal:** 46.00 SR\n- **Discount:** (.00)\n- **Service Charge (10%):** 4.00 SR\n- **GST (6%):** 3.00 SR\n- **Grand Total:** 53.00 SR\n- **Net Total:** 53.00 SR\n\n## Handwritten Note at Top\n\"Ueno Teff Pro Jpars\" (appears to be handwritten notation, unclear)",
+      "ground_truth_path": "gdt\\014.json",
+      "ground_truth": {
+        "company": "UROKO JAPANESE CUISINE SDN BHD",
+        "date": "20/03/2018",
+        "address": "22A-1, JALAN 17/54, SECTION 17, 46400 PETALING JAYA, SELANGOR.",
+        "total": "53.00"
+      },
+      "processing_time": 6.02030348777771,
+      "error": null
+    },
+    {
+      "image_path": "images\\015.jpg",
+      "transcription": "# Detailed Description of the Receipt\n\n## Header Information\n- **Store Name:** TEO HENG STATIONERY & BOOKS\n- **Address:** No. 53, Jalan Besar, Kampong Batang Berjuntai, Selangor Darul Ehsan\n- **Contact:** Tel: 03-3291 9872, Fax: 03-3271 9491\n- **GST Number:** 00068913856\n- **Document Type:** SIMPLIFIED TAX INVOICE\n- **Payment Method:** CASH\n\n## Transaction Details\n- **Receipt Number:** GS1801/27175\n- **Date:** 27/01/2018\n\n## Items Purchased\n\n| Item | Qty | Unit Price (RM) | Discount % | Amount (RM) |\n|------|-----|-----------------|------------|-------------|\n| 1355 - Double Side Foam Tape 18mm | 1 | 3.96 | 4.09 | 3.80 |\n| 9567950605126 - Camis SQ Book 200 | 5 | 2.74 | 4.96 | 13.00 |\n| 9567369315029 - Eagle F4 200 Foolscap Book | 1 | 5.47 | 4.96 | 5.20 |\n| 9567369305006 - Eagle F4 120 Numbering Foolscap Book | 1 | 3.96 | 4.09 | 3.80 |\n\n## Financial Summary\n- **Total Qty:** 8 items\n- **Subtotal (Ex):** RM 25.80\n- **Total Tax:** RM 1.55\n- **Rounding:** RM 0.00\n- **TOTAL:** RM 27.35\n- **CASH (Paid):** RM 27.35\n- **CHANGE:** RM 0.00\n\n## GST Summary\n- **Tax Code:** SR at 6.00%\n- **Amount (RM):** RM 25.80\n- **Tax (RM):** RM 1.55\n\n## Footer Notes\n- Note: (*) Indicated items sold have been related to GST (Goods & Services Tax)\n- \"GOODS SOLD ARE NOT RETURNABLE. THANK YOU.\"",
+      "ground_truth_path": "gdt\\015.json",
+      "ground_truth": {
+        "company": "TED HENG STATIONERY & BOOKS",
+        "date": "27/01/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "27.35"
+      },
+      "processing_time": 7.571718215942383,
+      "error": null
+    },
+    {
+      "image_path": "images\\016.jpg",
+      "transcription": "# Detailed Description of Tax Invoice\n\n## Header Information\n- **Business Name:** TED HENG STATIONERY & BOOKS\n- **Registration Number:** (00)451-37-M\n- **Address:** No. 53, JALAN BESAR, 68100 SELANGOR, MALAYSIA\n- **Owner:** SELANDON DAPUR EHSAN\n- **Phone:** Tel: 03-3271 9872, Fax: 03-3271 9481\n- **GST Number:** 0004897 13864\n\n## Document Type\n**SIMPLIFIED TAX INVOICE**\n\n## Transaction Details\n- **Type:** CASH\n- **Receipt Number:** CS1803/29617\n- **Date:** 15/03/2018\n\n## Item Details\n| Field | Details |\n|-------|---------|\n| **Item Code** | 4974052801334 |\n| **Product** | ARTLINE 70 |\n| **Quantity (QTY)** | 48 |\n| **Unit Price (U.P)** | 2.70 |\n| **Discount (DISC%)** | 7.41 |\n| **Amount (RM)** | 120.00 |\n\n## Financial Summary\n- **Total Qty:** 48\n- **Sub-Total (EX):** RM 120.00\n- **Total Tax:** RM 7.20\n- **Rounding:** RM 0.00\n- **TOTAL CASH:** RM 127.20\n- **CHANGE:** RM 0.00\n\n## GST Summary Table\n| Tax Code | % | Amount (RM) | Tax (RM) |\n|----------|---|-------------|----------|\n| SR | 6.00 | 120.00 | 7.20 |\n| **TOTAL** | | **120.00** | **7.20** |\n\n## Footer Notes\n- Note: (*) Indicated the item sold has been related to GST (Goods & Services Tax)\n- **\"GOODS SOLD ARE NOT RETURNABLE, THANK YOU.\"**",
+      "ground_truth_path": "gdt\\016.json",
+      "ground_truth": {
+        "company": "TEO HENG STATIONERY & BOOKS",
+        "date": "15/03/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "127.20"
+      },
+      "processing_time": 7.07310152053833,
+      "error": null
+    },
+    {
+      "image_path": "images\\017.jpg",
+      "transcription": "# Ted Heng Stationery & Books - Simplified Tax Invoice\n\n## Header Information\n- **Business Name:** TED HENG STATIONERY & BOOKS\n- **Registration No.:** (00)1451637-M\n- **Address:** No. 53, Jalan Besar, 45600 Batang Berjuntai, Selangor Darul Ehsan\n- **Contact:** Tel: 03-3271 9872 | Fax: 03-3271 9481\n- **GST No.:** 000689913856\n\n## Invoice Details\n- **Type:** SIMPLIFIED TAX INVOICE\n- **Payment Method:** CASH\n- **Receipt No.:** CS1801/27224\n- **Date:** 29/01/2018\n\n## Transaction Details\n\n| Item | Qty | Unit Price | Discount % | Amount (RM) |\n|------|-----|-----------|-----------|-----------|\n| Carbon Paper | 2 | 0.50 | 0.00 | 1.00 |\n\n## Totals\n- **Total Qty:** 2\n- **Sub-Total (Ex):** RM 1.00\n- **Total Tax:** RM 0.06\n- **Rounding:** -RM 0.01\n- **Total:** RM 1.05\n- **Cash:** RM 1.05\n- **Change:** RM 0.00\n\n## GST Summary\n- **Tax Code:** SR at 6.00%\n- **Amount (RM):** 1.00\n- **Tax (RM):** 0.06\n\n## Notes\n- (*) Item sold is GST-related\n- Goods sold are not returnable\n- Thank you",
+      "ground_truth_path": "gdt\\017.json",
+      "ground_truth": {
+        "company": "TEO HENG STATIONERY & BOOKS",
+        "date": "29/01/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "1.05"
+      },
+      "processing_time": 6.42799973487854,
+      "error": null
+    },
+    {
+      "image_path": "images\\018.jpg",
+      "transcription": "# Detailed Description of Receipt Image\n\nThis is a TAX INVOICE from **SWC ENTERPRISE SDN BHD** (Registration No. 1125630-V), located at:\n- B & 10, Jalan Ijok Permai 1\n- Pusat Niaga Ijok Permai\n- 48000 Ijok, Selangor\n\n## Invoice Details:\n- **GST ID No.:** 002017B06384\n- **Date:** 02/01/2018\n- **Time:** 10:46:55\n- **Cashier:** 123\n- **No.:** 0100036262\n\n## Transaction Details:\n\n| Item/Description | Qty | Price | Amount |\n|---|---|---|---|\n| 5X8 500G [1Y60] | - | - | - |\n| 5X8 500G | 1 | 4.20 | 4.20 |\n| **Total Qty:** | 1 | | |\n\n## Financial Summary:\n- **Total Amount:** 4.20\n- **Cash:** 50.20\n- **Change:** 46.00\n- **GST (6%):** 0.24 (included in total)\n\n## Footer Message:\n\"Thank You! Please Come Again!\"\n\"Goods Sold Only Exchangeable Within 3 Days!\"\n\nThe receipt appears worn and slightly faded, printed on thermal paper with standard receipt formatting.",
+      "ground_truth_path": "gdt\\018.json",
+      "ground_truth": {
+        "company": "SWC ENTERPRISE SDN BHD",
+        "date": "02/01/2018",
+        "address": "8 & 10, JALAN IJOK PERMAI 1, PUSAT NIAGA IJOK PERMAI, 48000 IJOK, SELANGOR.",
+        "total": "4.20"
+      },
+      "processing_time": 5.872803688049316,
+      "error": null
+    },
+    {
+      "image_path": "images\\019.jpg",
+      "transcription": "# Tax Invoice Transcription - F&P Pharmacy\n\n## Header Information\n- **Reference Number:** 3-1707067\n- **Business:** F&P PHARMACY\n- **GST Registration:** 00230959Z-P\n- **Address:** No.20, Ground Floor, Jalan BS 10/6 Taman Bukit Serdang, Seksyen 10, 43300 Seri Kembangan, Selangor Darul Ehsan\n- **Telephone:** 03-89599823\n- **GST Reg NO:** 00188066112\n\n## Transaction Details\n- **Document No:** CS00110240\n- **Date:** 02/03/2018\n- **Time:** 16:46:00\n- **Cashier:** F&P\n\n## Itemized Purchases\n\n| Item | Qty | S/Price | GST S/Price | Amount | Tax |\n|------|-----|---------|-------------|--------|-----|\n| Homecare Gascoal 50MG (9657892106258) | 1 | 5.66 | 6.00 | 6.00 | SR |\n| PP Naproxen NA 275 MG (9557834000034) | 1 | 4.30 | 4.30 | 4.30 | ZRL |\n| Yellow Lotion 30 ML (1014) | 1 | 3.58 | 3.80 | 3.80 | SR |\n| Panadol Soluble Tablet (1155) | 1 | 6.13 | 6.50 | 6.50 | SR |\n| PMS Gauze Bandage 5CM x 4M (95506104) | 1 | 5.00 | 5.30 | 5.30 | SR |\n| Dettol 50 ML | 1 | - | - | - | - |\n\n## Financial Summary\n- **Total Qty:** 6\n- **Total Sales (Excluding GST):** RM 30.68\n- **Discount:** RM 0.00\n- **Total GST:** RM 1.22\n- **Rounding:** RM 0.00\n- **Total Sales (Inclusive of GST):** RM 31.90\n- **Cash Paid:** RM 50.00\n- **Change:** RM 18.10\n\n## GST Breakdown\n| Tax Code | % | Amount (RM) | Tax (RM) |\n|----------|---|------------|----------|\n| SR | 6 | 20.38 | 1.22 |\n| ZRL | 0 | 10.30 | 0.00 |\n| **Total** | - | **30.68** | **1.22** |\n\n---\n**Footer Note:** \"GOODS SOLD ARE NOT RETURNABLE & EXCHANGABLE, THANK YOU.\"",
+      "ground_truth_path": "gdt\\019.json",
+      "ground_truth": {
+        "company": "F&P PHARMACY",
+        "date": "02/03/2018",
+        "address": "NO.20. GROUND FLOOR, JALAN BS 10/6 TAMAN BUKIT SERDANG, SEKSYEN 10, 43300 SERI KEMBANGAN. SELANGOR DARUL EHSAN",
+        "total": "31.90"
+      },
+      "processing_time": 9.422312259674072,
+      "error": null
+    },
+    {
+      "image_path": "images\\020.jpg",
+      "transcription": "# Tax Invoice Transcript\n\n**Business Information:**\n- UNIHAKKA INTERNATIONAL SDN BHD\n- Date: 07 Mar 2018 19:22\n- Registration Number: (867388-U)\n- Address: 12, Jalan Tampoi 74, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\n\n**Invoice Details:**\n- Invoice #: OR18030702170417\n\n**Items Purchased:**\n\n| Item | Qty | Total |\n|------|-----|-------|\n| SR 10010000035 - 1 Meat + 3 Vege @ $7.10 | 1 | $7.10 |\n| SR 10010000015 - Vegetable @ $1.10 | 1 | $1.10 |\n\n**Payment Summary:**\n- Total Amount: $8.20\n- GST @6%: $0.48\n- Net Total: $8.20\n\n**Payment Details:**\n- Payment Mode: CASH\n- Amount: $8.20\n- Change: $0.00\n\n**GST Summary:**\n- SR + GST @6%: 7.74 (Amount); 0.46 (Tax)\n\n**Additional Information:**\n- GST REG #00085619554\n- BAR WANG RICE@PERMAS JAYA\n- Price inclusive of GST\n- Thank You & Come Again!\n- Social Media: Like and Follow Us on Facebook! Facebook.com/BarWangRice",
+      "ground_truth_path": "gdt\\020.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "07 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 5.0214574337005615,
+      "error": null
+    },
+    {
+      "image_path": "images\\021.jpg",
+      "transcription": "# Tax Invoice from Unihakka International SDN BHD\n\n**Document Details:**\n- **Company:** UNIHAKKA INTERNATIONAL SDN BHD\n- **Date:** 13 Mar 2018 13:35\n- **Reference Number:** (887383-U)\n- **Address:** 12, Jalan Tampoi 7/4, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\n- **Invoice #:** OR18031302170441\n\n**Items Purchased:**\n| Item | Qty | Total |\n|------|-----|-------|\n| SR I0010000035 - 1 Meat + 3 Vege @ $7.10 | 1 | $7.10 |\n| SR I0010000015 - Vegetable @ $1.10 | 1 | $1.10 |\n\n**Billing Summary:**\n- **Total Amount:** $8.20\n- **GST @6%:** $0.46\n- **Net Total:** $8.20\n\n**Payment Details:**\n- **Payment Mode:** CASH\n- **Amount Paid:** $8.20\n- **Change:** $0.00\n\n**GST Information:**\n- GST Summary: 8.3 - 3.51 @6% (Amount: $7.74, Tax: $0.46)\n- **GST REG #:** 000858195584\n- **Merchant:** BAR WANG RICE @PERMAS JAYA\n- *Price Inclusive of GST*\n\n**Footer Message:**\n\"Thank You & Come Again! Like and Follow Us on Facebook! Facebook.com/BarWangRice\"",
+      "ground_truth_path": "gdt\\021.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "13 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 5.648440599441528,
+      "error": null
+    },
+    {
+      "image_path": "images\\022.jpg",
+      "transcription": "# Receipt Transcription\n\nThis is a retail receipt from **Pasar Mini Jin Seng**, located at:\n- 579, Jalan Permas Satu\n- Bandar Baru Permas Jaya\n- 81750 Plentong, Johor\n- Tel: 07-3874904\n- UEN/GST No. 000150511819\n\n## Receipt Details\n\n**Date:** 03/03/18\n**Cashier:** CASHIER\n**Transaction ID:** FAXINW:001-1541798\n\n### Items Purchased:\n1. Vegetables - 16.00 ZRL\n2. Telur/Telur Nasin - 2.40 ZRL\n3. Vegetables - 1.60 ZRL\n4. GL Stewed Pork 250g - 6.80 SR\n5. Boyan Ikan Sardin 425g - 6.80 SR\n\n**Item Count:** 5\n**Subtotal:** 33.80\n\n### Total Amount\n**TL:RM 33.80**\n**6% GST:** 0.77\n\n### Payment Details\n- Cash: 50.00\n- Change: 15.20\n\n**Transaction Time:** 03/03/18 10:18 (Invoice #001-1541798)\n\n### GST Summary\n- SR (@6%): 13.60 RM (Tax: 0.77 RM)\n- ZRL (@0%): 20.20 RM (Tax: 0.00 RM)\n\n---\n\n**\"Thank you, Please come again\"**\n\n**\"GOODS SOLD ARE NOT REFUNDABLE\"**",
+      "ground_truth_path": "gdt\\022.json",
+      "ground_truth": {
+        "company": "PASAR MINI JIN SENG",
+        "date": "03/03/18",
+        "address": "379, JALAN PERMAS SATU, BANDAR BARU PERMAS JAYA 81750 PLENTONG, JOHOR.",
+        "total": "33.80"
+      },
+      "processing_time": 5.985700845718384,
+      "error": null
+    },
+    {
+      "image_path": "images\\023.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Header Information\n- **Reference Number:** AB3064\n- **Establishment:** YHM Aeon Tebrau City\n- **Location:** SU17, Second Floor, Aeon Tebrau City, 1, Jalan Desa Tebrau, Taman Desa Tebrau, 81100 Johor Bahru, Johor\n- **Registration Number:** 002105827328\n\n## Transaction Details\n- **Order No.:** 1009249\n- **Date/Time:** 11/03/2018 07:09 PM\n- **Receipt No.:** 003-1220845\n- **Pax:** 1\n- **Cashier:** Cashier\n- **Eat In**\n\n## Itemized Purchases\n\n| Item | Qty | Unit Price | Amount | Tax |\n|------|-----|-----------|--------|-----|\n| FG-A00019 Green Tea | 1 | 1.50 | 1.50 | SR |\n| FG-Y00030 Yakiniku Bowl R | 1 | 12.80 | 12.80 | SR |\n| FG-Y00183 Neal Tamp Beef Bowl R | 2 | 15.80 | 31.60 | SR |\n| FG-Y00102 Miso/Wakame+Green Tea | 1 | 3.60 | 3.60 | SR |\n| FG-Y00264 Miso Soup | 1 | 0.00 | 0.00 | SR |\n\n## Totals\n- **Subtotal:** 49.70\n- **Total:** 49.70\n- **Total (MYR):** 49.70\n- **Total Excluded Tax:** 46.90\n- **Tax Amount:** 2.80\n\n## Payment Details\n- **Cash Received:** 50.00\n- **Cash Change:** 0.30\n\n## Tax Summary\n- **Tax Code:** SR (5%)\n- **Taxable Amount (MYR):** 46.90\n- **Tax (MYR):** 2.80\n\n## Footer\n\"**** Thank You ****\nPlease Come Again.\"",
+      "ground_truth_path": "gdt\\023.json",
+      "ground_truth": {
+        "company": "YHM AEON TEBRAU CITY",
+        "date": "11/03/2018",
+        "address": "S117, SECOND FLOOR, AEON TEBRAU CITY, 1, JALAN DESA TEBRAU, TAMAN DESA TEBRAU, 81100 JOHOR BAHRU, JOHOR.",
+        "total": "49.70"
+      },
+      "processing_time": 6.9121997356414795,
+      "error": null
+    },
+    {
+      "image_path": "images\\024.jpg",
+      "transcription": "# Receipt Transcription - Tony Roma's Restaurant\n\n## Header Information\n**Restaurant:** Tony Roma's Aeon Terrau City\n- **Company:** Grand Companions Sdn Bhd (289560-H)\n- **Location:** Lot G112, Aeon Mall Terrau City, No 1 Jalan Desa Terrau, 81100 Johor Bahru\n- **Tel:** 07-3510749\n- **Website:** www.tonyromas.com.my\n- **Facebook:** www.facebook.com/TRMALAYSIA\n- **GST ID:** 000436699136\n\n## Transaction Details\n- **Date:** 03 Mar 18, 05:16:55 PM\n- **Check #:** 65991\n- **Table:** TBL43/1\n- **Guest Count:** 3\n- **Server:** 1014 FAZLIN, 2 TR1\n\n## Itemized Orders\n1. **NY STRIP** (Medium Well) - RM 67.67\n   - Ranch Beans, Slaw\n\n2. **NY STRIP** (Medium) - RM 67.67\n   - FR Roasted Vege, Baked Potato (Loaded)\n\n3. **NY STRIP** (Medium Well) - RM 67.67\n   - FR Roasted Vege, FF (French Fries)\n\n4. **ICE LATTE** - RM 9.35\n5. **7UP** - RM 9.35\n6. **PEPSI** - RM 9.35\n\n## Bill Summary\n- **Subtotal:** RM 231.06\n- **10% Service Charge:** RM 23.10\n- **GST 6%:** RM 15.25\n- **Total:** RM 269.40\n\n## Additional Information\n- Promotional offer: RM 10 off for minimum RM 50 spent on next visit\n- Store #: U217\n- Survey validation code available (3-month validity from receipt date)\n- GST 6% included in total\n- GST Summary: S-GST 6%: RM 254.17 (RM 15.25), Z-GST 0%: RM 0.00",
+      "ground_truth_path": "gdt\\024.json",
+      "ground_truth": {
+        "company": "GRAND COMPANIONS SDN BHD",
+        "date": "03 MAR 19",
+        "address": "LOT G112, AEON MALL TEBRAU CITY NO 1 JALAN DESA TEBRAU 81100 JOHOR BAHRU",
+        "total": "269.40"
+      },
+      "processing_time": 7.776330947875977,
+      "error": null
+    },
+    {
+      "image_path": "images\\025.jpg",
+      "transcription": "# Tax Invoice Description\n\nThis image shows a tax invoice from **UNIHAKKA INTERNATIONAL SDN BHD**, dated **28 Mar 2018 18:14**.\n\n## Header Information\n- **Company Details**: Located at 12, Jalan Tampoi 7/4, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\n- **Registration Number**: (667388-U)\n- **Invoice Number**: OR1803280217032​4\n\n## Items Purchased\n| Item | Qty | Unit Price | Total |\n|------|-----|-----------|-------|\n| SR I0010000003S - 1 Meal + 3 Vege | 1 | $7.10 | $7.10 |\n| SR I0010000001S - Vegetable | 1 | $1.10 | $1.10 |\n\n## Financial Summary\n- **Total Amount**: $8.20\n- **GST (@6%)**: $0.46\n- **Net Total**: $8.20\n\n## Payment Details\n| Payment Mode | Amount |\n|--------------|--------|\n| CASH | $8.20 |\n| Change | $0.00 |\n\n## GST Summary\n- **SR = GST @6%**: Amount($): 7.74 | Tax($): 0.46\n\n## Additional Information\n- **GST Registration Number**: #000655195584\n- **Business Name**: BAR WANG RICE@PERMAS JAYA\n- **Note**: Price Inclusive Of GST\n- **Footer Message**: \"Thank You & Come Again! Like and Follow Us on Facebook! Facebook.com/BarWangRice\"\n\nA handwritten reference \"A031.8\" appears at the top of the document.",
+      "ground_truth_path": "gdt\\025.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "26 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PARINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 6.853541851043701,
+      "error": null
+    },
+    {
+      "image_path": "images\\026.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Business Details\n**YONG TAT HARDWARE TRADING**\n- Registration: JM0292487-D\n- Address: No 4, Jalan Perjiranan 10, Taman Air Biru, 81700 Pasir Gudang, Johor\n- Tel: 07-2514733\n- Fax: 07-2514733\n- Email: YONGTAT99@YAHOO.COM.MY\n- GST ID: 001570349058\n\n## Invoice Information\n- **Doc No.:** CS00035062\n- **Date:** 13/03/2016\n- **Time:** 12:41:00\n- **Cashier:** USER\n\n## Transaction Details\n\n| Item | Qty | S/Price | GST S/Price | GST Amount | Tax |\n|------|-----|---------|-------------|------------|-----|\n| 8603 | 1.00 | 67.92 | 72.00 | 72.00 | SR |\n| | | 0.8MM X 50\" X 60\" AIR BED GASKET | | |\n\n**Total Qty:** 1\n\n## Financial Summary\n- **Total Sales (Excluding GST):** RM 67.92\n- **Discount:** RM 0.00\n- **Total GST:** RM 4.08\n- **Rounding:** RM 0.00\n- **Total Sales (Inclusive of GST):** RM 72.00\n- **Cash Received:** RM 102.00\n- **Change:** RM 30.00\n\n## GST Summary\n| Tax Code | % | Amount (RM) | Tax (RM) |\n|----------|---|------------|---------|\n| SR | 6 | 67.92 | 4.08 |\n| **Total** | | **67.92** | **4.08** |\n\n**Footer Note:** \"GOODS SOLD ARE NOT RETURNABLE. THANK YOU.\"",
+      "ground_truth_path": "gdt\\026.json",
+      "ground_truth": {
+        "company": "YONG TAT HARDWARE TRADING",
+        "date": "13/03/2018",
+        "address": "NO 4,JALAN PERJIRANAN 10, TAMAN AIR BIRU, 81700 PASIR GUDANG, JOHOR.",
+        "total": "72.00"
+      },
+      "processing_time": 7.428583145141602,
+      "error": null
+    },
+    {
+      "image_path": "images\\027.jpg",
+      "transcription": "# Receipt Transcription\n\n**Business Information:**\n- Triple Six Point Enterprise 666\n- No 14&16 Jalan Permas 4/3 Bandar Baru Permas Jaya\n- Tel: 016-7574666\n- Receipt No.: REC-0014886\n- Date: 22-03-2018 04:01:20 PM\n- Payment Type: Cash\n\n**Items Purchased:**\n\n| QTY | ITEM | PRICE (RM) | TOTAL (RM) |\n|-----|------|-----------|-----------|\n| 1x | VS FUJI 500ml | 10.00 | 10.00 |\n| 1x | Apollo cake original 30s (Disc: 0.3000) | 6.80 | 6.50 |\n| 1x | TG Cashew nuts mixed Almond smoke | 4.20 | 4.20 |\n| 1x | TG Coated coconut peanuts | 1.90 | 1.90 |\n\n**Summary:**\n- Discount: 0.30\n- Total Amount: 22.60\n- Tendered: 22.60\n\n**Additional Information:**\n- A handwritten reference number \"A23/13\" appears at the top of the receipt",
+      "ground_truth_path": "gdt\\027.json",
+      "ground_truth": {
+        "company": "TRIPLE SIX POINT ENTERPRISE 666",
+        "date": "22-03-2018",
+        "address": "NO 14& 16 JALAN PERMAS 4/3 BANDAR BARU PERMAS JAY",
+        "total": "22.60"
+      },
+      "processing_time": 5.056755065917969,
+      "error": null
+    },
+    {
+      "image_path": "images\\028.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n**UNIHAKKA INTERNATIONAL SDN BHD**\n- Date: 25 Mar 2018 16:26\n- Company Reference: (887388-U)\n- Address: 12, Jalan Tampoi 7/4, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\n\n**Invoice Number:** OR18032521704338\n\n## Items Purchased:\n\n| Item | Qty | Total |\n|------|-----|-------|\n| SR 10010000060- 4 Vege @ $5.50 | 1 | $5.50 |\n| SR 10010000057-Fried Noodle (L) @ $3.00 | 1 | $3.00 |\n\n## Cost Summary:\n- **Total Amount:** $6.50\n- **GST @6%:** $0.48\n- **Nett Total:** $6.50\n\n## Payment Details:\n| Mode | Amount |\n|------|--------|\n| CASH | $8.50 |\n| Change | $0.00 |\n\n## GST Summary:\n- SR + GST @6%: Amount(R) = 8.02 | Tax($) = 0.48\n\n**GST REG #00605610504**\n**BAR WANG RICE@PERMAS JAYA**\n*(Price Inclusive Of GST)*\n\n**Message:** \"Thank You & Come Again! Like and Follow Us on Facebook! Facebook.com/BarWangRice\"",
+      "ground_truth_path": "gdt\\028.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "25 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.50"
+      },
+      "processing_time": 5.892658710479736,
+      "error": null
+    },
+    {
+      "image_path": "images\\029.jpg",
+      "transcription": "# Tax Invoice Transcription\n\n## Header Information\n- **Merchant:** UNIHAKKA INTERNATIONAL SDN BHD\n- **Date & Time:** 20 Mar 2018 17:55\n- **Registration Number:** (667388-U)\n- **Address:** 12, Jalan Tampoi 7/4, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\n\n## Invoice Details\n- **Invoice #:** OR18032002170471\n- **Document Type:** TAX INVOICE\n\n## Item Details\n| Item | Qty | Total |\n|------|-----|-------|\n| SR 10010000061- 5 Vege | 1 | $6.60 |\n\n## Financial Summary\n- **Total Amount:** $6.60\n- **GST (6%):** $0.37\n- **Net Total:** $6.60\n\n## Payment Information\n| Payment Mode | Amount |\n|--------------|--------|\n| CASH | $6.60 |\n| Change | $0.00 |\n\n## GST Details\n| Category | Amount ($) | Tax ($) |\n|----------|-----------|---------|\n| 5R + GST @6% | 6.23 | 0.37 |\n\n## Additional Information\n- **GST Registration Number:** 6000656195564\n- **Business Name:** BAR WANG RICE @PERMAS JAYA\n- **Note:** (Price Inclusive Of GST)\n- **Footer Message:** Thank You & Come Again! Like and Follow Us on Facebook! Facebook.com/BarWangRice",
+      "ground_truth_path": "gdt\\029.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "20 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$6.60"
+      },
+      "processing_time": 5.088638544082642,
+      "error": null
+    }
+  ]
+}

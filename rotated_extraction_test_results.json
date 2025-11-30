@@ -1,0 +1,323 @@
+{
+  "timestamp": "2025-11-30T06:32:23.150376",
+  "models_tested": [
+    "Claude-haiku-4-5",
+    "Claude-sonnet-4-5",
+    "Gemini-2.5-flash",
+    "Gemini-2.5-pro",
+    "GPT-4.1-mini",
+    "GPT-4.1-nano",
+    "GPT-4.1",
+    "GPT-5-mini",
+    "GPT-5"
+  ],
+  "summary": {
+    "Claude-haiku-4-5": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.27979166666666666,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.7825,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.10416666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.008333333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.22416666666666668,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 8.604262830813726,
+      "total_input_tokens": 151776,
+      "total_output_tokens": 45447,
+      "total_tokens": null,
+      "average_input_tokens": null,
+      "average_output_tokens": null,
+      "average_total_tokens": null
+    },
+    "Claude-sonnet-4-5": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.5241666666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.8408333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.29833333333333334,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.58,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.3775,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 20.759096386035285,
+      "total_input_tokens": 151776,
+      "total_output_tokens": 53083,
+      "total_tokens": null,
+      "average_input_tokens": null,
+      "average_output_tokens": null,
+      "average_total_tokens": null
+    },
+    "Gemini-2.5-flash": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.803125,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.8216666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.8008333333333334,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.7875,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.8025,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 17.5430488884449,
+      "total_input_tokens": null,
+      "total_output_tokens": null,
+      "total_tokens": null,
+      "average_input_tokens": null,
+      "average_output_tokens": null,
+      "average_total_tokens": null
+    },
+    "Gemini-2.5-pro": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.8266666666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.8625,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.8225,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.785,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.8366666666666667,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 19.577358704805373,
+      "total_input_tokens": null,
+      "total_output_tokens": null,
+      "total_tokens": null,
+      "average_input_tokens": null,
+      "average_output_tokens": null,
+      "average_total_tokens": null
+    },
+    "GPT-4.1-mini": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.7047916666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.8258333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.6466666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.6858333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.6608333333333334,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 3.126821533838908,
+      "total_input_tokens": 243532,
+      "total_output_tokens": 7505,
+      "total_tokens": 251037,
+      "average_input_tokens": 2029.4333333333334,
+      "average_output_tokens": 62.541666666666664,
+      "average_total_tokens": 2091.975
+    },
+    "GPT-4.1-nano": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.3597916666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.7424999999999999,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.21166666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.1525,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.3325,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 2.094036797682444,
+      "total_input_tokens": 362716,
+      "total_output_tokens": 7095,
+      "total_tokens": 369811,
+      "average_input_tokens": 3022.633333333333,
+      "average_output_tokens": 59.125,
+      "average_total_tokens": 3081.758333333333
+    },
+    "GPT-4.1": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.6972916666666666,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.8166666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.6408333333333334,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.6675,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.6641666666666667,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 3.496005642414093,
+      "total_input_tokens": 243532,
+      "total_output_tokens": 7432,
+      "total_tokens": 250964,
+      "average_input_tokens": 2029.4333333333334,
+      "average_output_tokens": 61.93333333333333,
+      "average_total_tokens": 2091.366666666667
+    },
+    "GPT-5-mini": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.6385416666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.81,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.5558333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.6241666666666666,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.5641666666666667,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 15.031440605719885,
+      "total_input_tokens": 183236,
+      "total_output_tokens": 105172,
+      "total_tokens": 288408,
+      "average_input_tokens": 1526.9666666666667,
+      "average_output_tokens": 876.4333333333333,
+      "average_total_tokens": 2403.4
+    },
+    "GPT-5": {
+      "total_tests": 120,
+      "successful_extractions": 120,
+      "overall_accuracy": 0.6004166666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.7691666666666667,
+          "count": 30,
+          "successful": 30
+        },
+        "90": {
+          "accuracy": 0.5375,
+          "count": 30,
+          "successful": 30
+        },
+        "180": {
+          "accuracy": 0.5383333333333333,
+          "count": 30,
+          "successful": 30
+        },
+        "270": {
+          "accuracy": 0.5566666666666666,
+          "count": 30,
+          "successful": 30
+        }
+      },
+      "mean_processing_time": 70.23630771835646,
+      "total_input_tokens": 121480,
+      "total_output_tokens": 287658,
+      "total_tokens": 409138,
+      "average_input_tokens": 1012.3333333333334,
+      "average_output_tokens": 2397.15,
+      "average_total_tokens": 3409.483333333333
+    }
+  },
+  "total_images": 30
+}

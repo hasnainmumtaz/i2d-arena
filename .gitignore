@@ -39,7 +39,6 @@ ENV/
 *~
 
 # Results and outputs
-*.json
 !package.json
 !package-lock.json
 comparison_results/

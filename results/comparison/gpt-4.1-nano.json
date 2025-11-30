@@ -1,0 +1,534 @@
+{
+  "model": "GPT-4.1-nano",
+  "timestamp": "2025-11-24T13:55:23.085423",
+  "total_images": 30,
+  "successful": 30,
+  "failed": 0,
+  "processing_time": 13.101324558258057,
+  "metrics": {
+    "success_rate": 1.0,
+    "average_processing_time": 3.9233896096547443,
+    "total_processing_time": 13.101324558258057,
+    "overall_accuracy": 0.7383333333333333,
+    "field_statistics": {
+      "company": {
+        "total": 30,
+        "exact_matches": 18,
+        "partial_matches": 9,
+        "no_matches": 3,
+        "exact_match_rate": 0.6,
+        "partial_match_rate": 0.3,
+        "no_match_rate": 0.1
+      },
+      "date": {
+        "total": 30,
+        "exact_matches": 17,
+        "partial_matches": 2,
+        "no_matches": 11,
+        "exact_match_rate": 0.5666666666666667,
+        "partial_match_rate": 0.06666666666666667,
+        "no_match_rate": 0.36666666666666664
+      },
+      "address": {
+        "total": 30,
+        "exact_matches": 6,
+        "partial_matches": 22,
+        "no_matches": 2,
+        "exact_match_rate": 0.2,
+        "partial_match_rate": 0.7333333333333333,
+        "no_match_rate": 0.06666666666666667
+      },
+      "total": {
+        "total": 30,
+        "exact_matches": 20,
+        "partial_matches": 6,
+        "no_matches": 4,
+        "exact_match_rate": 0.6666666666666666,
+        "partial_match_rate": 0.2,
+        "no_match_rate": 0.13333333333333333
+      }
+    }
+  },
+  "results": [
+    {
+      "image_path": "images\\000.jpg",
+      "transcription": "{\"company\": \"OJC MARKETING SDN BHD\", \"date\": \"15/01/2019\", \"address\": \"NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, 81750 MASAI, JOHOR\", \"total\": \"193.00\"}",
+      "ground_truth_path": "gdt\\000.json",
+      "ground_truth": {
+        "company": "OJC MARKETING SDN BHD",
+        "date": "15/01/2019",
+        "address": "NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, B1750 MASAI, JOHOR",
+        "total": "193.00"
+      },
+      "processing_time": 4.047624349594116,
+      "error": null,
+      "input_tokens": 1148,
+      "output_tokens": 60,
+      "total_tokens": 1208
+    },
+    {
+      "image_path": "images\\001.jpg",
+      "transcription": "{\"company\": \"OJC MARKETING SDN BHD\", \"date\": \"02/01/2019\", \"address\": \"NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, 81750 MASAI, JOHOR\", \"total\": \"170.00\"}",
+      "ground_truth_path": "gdt\\001.json",
+      "ground_truth": {
+        "company": "OJC MARKETING SDN BHD",
+        "date": "02/01/2019",
+        "address": "NO 2 & 4, JALAN BAYU 4, BANDAR SERI ALAM, 81750 MASAI, JOHOR",
+        "total": "170.00"
+      },
+      "processing_time": 3.650024175643921,
+      "error": null,
+      "input_tokens": 1037,
+      "output_tokens": 60,
+      "total_tokens": 1097
+    },
+    {
+      "image_path": "images\\002.jpg",
+      "transcription": "{\"company\": \"GOGIANT ENGINEERING (M) SDN BHD\", \"date\": \"09/02/2018\", \"address\": \"NO.59 JALAN PERMAS 9/5 BANDAR BARU PERMAS JAYA 81750 JOHOR BAHRU\", \"total\": \"436.20\"}",
+      "ground_truth_path": "gdt\\002.json",
+      "ground_truth": {
+        "company": "PERNIAGAAN ZHENG HUI",
+        "date": "09/02/2018",
+        "address": "NO.59 JALAN PERMAS 9/5 BANDAR BARU PERMAS JAYA 81750 JOHOR BAHRU",
+        "total": "436.20"
+      },
+      "processing_time": 4.648638010025024,
+      "error": null,
+      "input_tokens": 3470,
+      "output_tokens": 62,
+      "total_tokens": 3532
+    },
+    {
+      "image_path": "images\\003.jpg",
+      "transcription": "{\"company\": \"PETRON BKT LANJANG SB ALSERKAM ENTERPRISE\", \"date\": null, \"address\": \"KM 458.4 BKT LANJANG UTARA, L/RAYA UTARA SELATAN, SG BULOH 47000 SUNGAI BULOH\", \"total\": null}",
+      "ground_truth_path": "gdt\\003.json",
+      "ground_truth": {
+        "company": "PETRON BKT LANJAN SB",
+        "date": "01/02/2018",
+        "address": "KM 458.4 BKT LANJAN UTARA, L/RAYA UTARA SELATAN,SG BULOH 47000 SUNGAI BUL",
+        "total": "4.90"
+      },
+      "processing_time": 5.334353446960449,
+      "error": null,
+      "input_tokens": 2181,
+      "output_tokens": 63,
+      "total_tokens": 2244
+    },
+    {
+      "image_path": "images\\004.jpg",
+      "transcription": "{\"company\": \"Gerbang Alaf Restaurants Sdn Bhd\", \"date\": null, \"address\": \"Level 6, Bangunan TH, Damansara Uptown3 No.3, Jalan SS21/39, 47400 Petaling Jaya, Selangor\", \"total\": \"38.90\"}",
+      "ground_truth_path": "gdt\\004.json",
+      "ground_truth": {
+        "company": "GERBANG ALAF RESTAURANTS SDN BHD",
+        "date": "18/01/2018",
+        "address": "LEVEL 6, BANGUNAN TH, DAMANSARA UPTOWN3 NO.3, JALAN SS21/39,47400 PETALING JAYA SELANGOR",
+        "total": "38.90"
+      },
+      "processing_time": 5.822445869445801,
+      "error": null,
+      "input_tokens": 2825,
+      "output_tokens": 61,
+      "total_tokens": 2886
+    },
+    {
+      "image_path": "images\\005.jpg",
+      "transcription": "{\"company\": \"SIN LIANHAP SDN BHD\", \"date\": \"05/02/2018\", \"address\": \"LOT 13, JALAN IPOH, KG BATU 30, JALAN LAMA, 44300 BATU KALI, SELANGOR\", \"total\": \"7.30\"}",
+      "ground_truth_path": "gdt\\005.json",
+      "ground_truth": {
+        "company": "SIN LIANHAP SDN BHD",
+        "date": "05/02/2018",
+        "address": "LOT 13, JALAN IPOH, KG BATU 30, ULU YAM LAMA 44300 BTG KALI, SELANGOR.",
+        "total": "7.30"
+      },
+      "processing_time": 5.443101644515991,
+      "error": null,
+      "input_tokens": 2732,
+      "output_tokens": 64,
+      "total_tokens": 2796
+    },
+    {
+      "image_path": "images\\006.jpg",
+      "transcription": "{\"company\": \"CROSS CHANNEL NETWORK SDN. BHD.\", \"date\": \"29/01/2018\", \"address\": \"47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.\", \"total\": \"6.00\"}",
+      "ground_truth_path": "gdt\\006.json",
+      "ground_truth": {
+        "company": "CROSS CHANNEL NETWORK SDN. BHD.",
+        "date": "29/01/2018",
+        "address": "47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.",
+        "total": "6.35"
+      },
+      "processing_time": 3.9721176624298096,
+      "error": null,
+      "input_tokens": 1492,
+      "output_tokens": 66,
+      "total_tokens": 1558
+    },
+    {
+      "image_path": "images\\007.jpg",
+      "transcription": "{\"company\": \"CROSS CHANNEL NETWORK SDN. BHD.\", \"date\": \"31/12/2017\", \"address\": \"47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.\", \"total\": \"7.50 RM\"}",
+      "ground_truth_path": "gdt\\007.json",
+      "ground_truth": {
+        "company": "CROSS CHANNEL NETWORK SDN. BHD.",
+        "date": "31/12/2017",
+        "address": "47, JALAN MERANTI 1, SEK. 3, BANDAR UTAMA BATANG KALI, 44300 BATANG KALI, SELANGOR.",
+        "total": "7.95"
+      },
+      "processing_time": 4.557438850402832,
+      "error": null,
+      "input_tokens": 1640,
+      "output_tokens": 67,
+      "total_tokens": 1707
+    },
+    {
+      "image_path": "images\\008.jpg",
+      "transcription": "{\"company\": \"SWC ENTERPRISE SDN BHD\", \"date\": \"08/01/2018\", \"address\": \"No. 5-7, Jalan Mahagoni. 7/1, Seksyen 4, Bandar Utama, 44300 Batang Kali, Selangor.\", \"total\": \"8.00\"}",
+      "ground_truth_path": "gdt\\008.json",
+      "ground_truth": {
+        "company": "SWC ENTERPRISE SDN BHD",
+        "date": "08/01/2018",
+        "address": "NO. 5-7, JALAN MAHAGONI 7/1, SEKYSEN 4, BANDAR UTAMA, 44300 BATANG KALI, SELANGOR.",
+        "total": "8.00"
+      },
+      "processing_time": 3.910548686981201,
+      "error": null,
+      "input_tokens": 1610,
+      "output_tokens": 67,
+      "total_tokens": 1677
+    },
+    {
+      "image_path": "images\\009.jpg",
+      "transcription": "{\"company\": \"LIGHTROOM GALLERY SDN BHD\", \"date\": \"20/11/2017\", \"address\": \"28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E., MALAYSIA\", \"total\": \"RM 278.80\"}",
+      "ground_truth_path": "gdt\\009.json",
+      "ground_truth": {
+        "company": "LIGHTROOM GALLERY SDN BHD",
+        "date": "20/11/2017",
+        "address": "NO: 28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E, MALAYSIA",
+        "total": "278.80"
+      },
+      "processing_time": 5.083537340164185,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 65,
+      "total_tokens": 3801
+    },
+    {
+      "image_path": "images\\010.jpg",
+      "transcription": "{\"company\": \"99 SPEED MART S/B\", \"date\": \"20/11/17\", \"address\": \"LOT P.T, 2811, JALAN ANGSA, TAMAN BERKELEY, 43150 KLANG, SELANGOR\", \"total\": \"RM169.20\"}",
+      "ground_truth_path": "gdt\\010.json",
+      "ground_truth": {
+        "company": "99 SPEED MART S/B",
+        "date": "20-11-17",
+        "address": "LOT P.T. 2811, JALAN ANGSA, TAMAN BERKELEY 41150 KLANG, SELANGOR 1413-SETIA ALAM 2",
+        "total": "169.80"
+      },
+      "processing_time": 3.020932912826538,
+      "error": null,
+      "input_tokens": 3007,
+      "output_tokens": 56,
+      "total_tokens": 3063
+    },
+    {
+      "image_path": "images\\011.jpg",
+      "transcription": "{\"company\": \"SECURE PARKING CORPORATION S/B\", \"date\": null, \"address\": \"Riverwalk Village, Batu 3, Jalan Ipoh, 51200 KL.\", \"total\": \"RM 1.00\"}",
+      "ground_truth_path": "gdt\\011.json",
+      "ground_truth": {
+        "company": "SECURE PARKING CORPORATION S/B",
+        "date": "23.03.18",
+        "address": "RIVERWALK VILLAGE BATU 3, JALAN IPOH 51200 KL.",
+        "total": "1.00"
+      },
+      "processing_time": 1.9683294296264648,
+      "error": null,
+      "input_tokens": 1354,
+      "output_tokens": 43,
+      "total_tokens": 1397
+    },
+    {
+      "image_path": "images\\012.jpg",
+      "transcription": "{\"company\": \"LIGHTROOM GALLERY SDN BHD\", \"date\": \"20/11/2017\", \"address\": \"No: 28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E., MALAYSIA\", \"total\": \"RM 278.80\"}",
+      "ground_truth_path": "gdt\\012.json",
+      "ground_truth": {
+        "company": "LIGHTROOM GALLERY SDN BHD",
+        "date": "20/11/2017",
+        "address": "NO: 28, JALAN ASTANA 1C, BANDAR BUKIT RAJA, 41050 KLANG SELANGOR D.E, MALAYSIA",
+        "total": "278.80"
+      },
+      "processing_time": 5.082033395767212,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 68,
+      "total_tokens": 3804
+    },
+    {
+      "image_path": "images\\013.jpg",
+      "transcription": "{\"company\": \"Old Town White Coffee\", \"date\": \"22/03/2018\", \"address\": \"Old Town Kopitiam Sdn Bhd (716269-X) Sri Rampai\", \"total\": \"30.25\"}",
+      "ground_truth_path": "gdt\\013.json",
+      "ground_truth": {
+        "company": "OLD TOWN KOPITAM SND BHD",
+        "date": "22 MAR 18",
+        "address": "SRI RAMPAI",
+        "total": "30.25"
+      },
+      "processing_time": 2.8974320888519287,
+      "error": null,
+      "input_tokens": 3106,
+      "output_tokens": 43,
+      "total_tokens": 3149
+    },
+    {
+      "image_path": "images\\014.jpg",
+      "transcription": "{\"company\": \"UROKO JAPANESE CUISINE SDN BHD\", \"date\": \"20/03/2018\", \"address\": \"22A-1, JALAN 17/54, SECTION 17, 46400 PETALING JAYA, SELANGOR.\", \"total\": \"53.00\"}",
+      "ground_truth_path": "gdt\\014.json",
+      "ground_truth": {
+        "company": "UROKO JAPANESE CUISINE SDN BHD",
+        "date": "20/03/2018",
+        "address": "22A-1, JALAN 17/54, SECTION 17, 46400 PETALING JAYA, SELANGOR.",
+        "total": "53.00"
+      },
+      "processing_time": 2.36124324798584,
+      "error": null,
+      "input_tokens": 1787,
+      "output_tokens": 64,
+      "total_tokens": 1851
+    },
+    {
+      "image_path": "images\\015.jpg",
+      "transcription": "{\"company\": \"TED HENG STATIONERY & BOOKS\", \"date\": \"27/01/2018\", \"address\": \"NO. 53, JALAN BESAR, 45600 BAIANG BERSEUTAI, SELANGOR DARUL ESHAN\", \"total\": \"27.35\"}",
+      "ground_truth_path": "gdt\\015.json",
+      "ground_truth": {
+        "company": "TED HENG STATIONERY & BOOKS",
+        "date": "27/01/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "27.35"
+      },
+      "processing_time": 4.023439884185791,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 61,
+      "total_tokens": 3797
+    },
+    {
+      "image_path": "images\\016.jpg",
+      "transcription": "{\"company\": \"TED HENG STATIONERY & BOOKS\", \"date\": \"15/03/2018\", \"address\": \"NO. 53, JALAN BESAR, 45000 BATANG BERJNTAI, SELANGOR DARUL EHSAN\", \"total\": \"127.20\"}",
+      "ground_truth_path": "gdt\\016.json",
+      "ground_truth": {
+        "company": "TEO HENG STATIONERY & BOOKS",
+        "date": "15/03/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "127.20"
+      },
+      "processing_time": 6.961156129837036,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 60,
+      "total_tokens": 3796
+    },
+    {
+      "image_path": "images\\017.jpg",
+      "transcription": "{\"company\": \"TED HENG STATIONERY & BOOKS\", \"date\": \"29/01/2018\", \"address\": \"NO. 53, JALAN BESAR, 45600 BAJANG BERJUNTAI, SELANGOR DARUL EHSAN\", \"total\": \"1.05\"}",
+      "ground_truth_path": "gdt\\017.json",
+      "ground_truth": {
+        "company": "TEO HENG STATIONERY & BOOKS",
+        "date": "29/01/2018",
+        "address": "NO. 53, JALAN BESAR, 45600 BATANG BERJUNTAI SELANGOR DARUL EHSAN",
+        "total": "1.05"
+      },
+      "processing_time": 4.067898511886597,
+      "error": null,
+      "input_tokens": 3834,
+      "output_tokens": 62,
+      "total_tokens": 3896
+    },
+    {
+      "image_path": "images\\018.jpg",
+      "transcription": "{\"company\": \"SWC ENTERPRISE SDN BHD\", \"date\": \"02/01/2018\", \"address\": \"8 & 10, Jalan Tjak Permai 1, Pusat Niaga Tjak Permai, 48000 Ijok, Selangor.\", \"total\": \"4.20\"}",
+      "ground_truth_path": "gdt\\018.json",
+      "ground_truth": {
+        "company": "SWC ENTERPRISE SDN BHD",
+        "date": "02/01/2018",
+        "address": "8 & 10, JALAN IJOK PERMAI 1, PUSAT NIAGA IJOK PERMAI, 48000 IJOK, SELANGOR.",
+        "total": "4.20"
+      },
+      "processing_time": 4.475783348083496,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 62,
+      "total_tokens": 3798
+    },
+    {
+      "image_path": "images\\019.jpg",
+      "transcription": "{\"company\": \"F&P PHARMACY\", \"date\": \"02/03/2018\", \"address\": \"NO.20, GROUND FLOOR, JALAN BS 10/6 TAMAN BUKIT SERDANG, SEKSYEN 10, 43300 SERI KEMBANGAN, SELANGOR DARUL EHSAN\", \"total\": \"31.90\"}",
+      "ground_truth_path": "gdt\\019.json",
+      "ground_truth": {
+        "company": "F&P PHARMACY",
+        "date": "02/03/2018",
+        "address": "NO.20. GROUND FLOOR, JALAN BS 10/6 TAMAN BUKIT SERDANG, SEKSYEN 10, 43300 SERI KEMBANGAN. SELANGOR DARUL EHSAN",
+        "total": "31.90"
+      },
+      "processing_time": 4.91664981842041,
+      "error": null,
+      "input_tokens": 3303,
+      "output_tokens": 78,
+      "total_tokens": 3381
+    },
+    {
+      "image_path": "images\\020.jpg",
+      "transcription": "{\"company\": \"UNIHACKA INTERNATIONAL SDN BHD\", \"date\": \"07/03/2018\", \"address\": \"12, Jalan Tampoi 7/14, Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\", \"total\": \"8.20\"}",
+      "ground_truth_path": "gdt\\020.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "07 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 4.353198528289795,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 60,
+      "total_tokens": 3796
+    },
+    {
+      "image_path": "images\\021.jpg",
+      "transcription": "{\"company\": \"UNIHAAKA INTERNATIONAL SDN BHD\", \"date\": \"13/03/2018\", \"address\": \"12, Jalan Tampoi 7/4,Kawasan Perindustrian Tampoi 81200 Johor Bahru, Johor\", \"total\": \"RM8.20\"}",
+      "ground_truth_path": "gdt\\021.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "13 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 2.57360577583313,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 59,
+      "total_tokens": 3795
+    },
+    {
+      "image_path": "images\\022.jpg",
+      "transcription": "{\"company\": \"Pasar Mini Jin Seng\", \"date\": \"03/03/2018\", \"address\": \"379, Jalan Permais Satu, Bandar Baru Permais Jaya, 81750 Plentong, Johor\", \"total\": \"33.80\"}",
+      "ground_truth_path": "gdt\\022.json",
+      "ground_truth": {
+        "company": "PASAR MINI JIN SENG",
+        "date": "03/03/18",
+        "address": "379, JALAN PERMAS SATU, BANDAR BARU PERMAS JAYA 81750 PLENTONG, JOHOR.",
+        "total": "33.80"
+      },
+      "processing_time": 3.589048147201538,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 51,
+      "total_tokens": 3787
+    },
+    {
+      "image_path": "images\\023.jpg",
+      "transcription": "{\"company\": null, \"date\": \"11/03/2018\", \"address\": \"YHM Aeon Tebrau City S17, Second Floor, Aeon Tebrau City, 1, Jalan Desa Tebrau, Taman Desa Tebrau, 81100 Johor Bahru, Johor.\", \"total\": \"49.70\"}",
+      "ground_truth_path": "gdt\\023.json",
+      "ground_truth": {
+        "company": "YHM AEON TEBRAU CITY",
+        "date": "11/03/2018",
+        "address": "S117, SECOND FLOOR, AEON TEBRAU CITY, 1, JALAN DESA TEBRAU, TAMAN DESA TEBRAU, 81100 JOHOR BAHRU, JOHOR.",
+        "total": "49.70"
+      },
+      "processing_time": 2.781203269958496,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 66,
+      "total_tokens": 3802
+    },
+    {
+      "image_path": "images\\024.jpg",
+      "transcription": "{\"company\": \"Tony Roma's AEON Tebrau City\", \"date\": \"03/03/2018\", \"address\": \"LOT G12, AEON MALL TEBRAU CITY, NO 1 JALAN DESA TEBRAU, 81100 JOHOR BAHRU\", \"total\": \"269.40\"}",
+      "ground_truth_path": "gdt\\024.json",
+      "ground_truth": {
+        "company": "GRAND COMPANIONS SDN BHD",
+        "date": "03 MAR 19",
+        "address": "LOT G112, AEON MALL TEBRAU CITY NO 1 JALAN DESA TEBRAU 81100 JOHOR BAHRU",
+        "total": "269.40"
+      },
+      "processing_time": 3.2085673809051514,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 65,
+      "total_tokens": 3801
+    },
+    {
+      "image_path": "images\\025.jpg",
+      "transcription": "{\"company\": \"UNIKHAKKA INTERNATIONAL SDN BHD\", \"date\": \"26/03/2018\", \"address\": \"12, Jalan Tampoi 7/4, Kawasan Perindustrian, Tampoi, 81200 Johor Bahru, Johor\", \"total\": \"$8.20\"}",
+      "ground_truth_path": "gdt\\025.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "26 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PARINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.20"
+      },
+      "processing_time": 3.849698066711426,
+      "error": null,
+      "input_tokens": 3849,
+      "output_tokens": 63,
+      "total_tokens": 3912
+    },
+    {
+      "image_path": "images\\026.jpg",
+      "transcription": "{\"company\": \"YONG TAT HARDWARE TRADING\", \"date\": \"13/03/2018\", \"address\": \"NO 4,JALAN PERJIRANAN 10, TAMAN AIR BIRU, 81700 PASIR GUDANG, JOHOR.\", \"total\": \"72.00\"}",
+      "ground_truth_path": "gdt\\026.json",
+      "ground_truth": {
+        "company": "YONG TAT HARDWARE TRADING",
+        "date": "13/03/2018",
+        "address": "NO 4,JALAN PERJIRANAN 10, TAMAN AIR BIRU, 81700 PASIR GUDANG, JOHOR.",
+        "total": "72.00"
+      },
+      "processing_time": 2.474785327911377,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 62,
+      "total_tokens": 3798
+    },
+    {
+      "image_path": "images\\027.jpg",
+      "transcription": "{\"company\": \"Triple Six Point Enterprise 666\", \"date\": \"22/03/2018\", \"address\": \"No 148 16 Jalan Permas 43 Bandar Baru Permas Jaya\", \"total\": \"22.60\"}",
+      "ground_truth_path": "gdt\\027.json",
+      "ground_truth": {
+        "company": "TRIPLE SIX POINT ENTERPRISE 666",
+        "date": "22-03-2018",
+        "address": "NO 14& 16 JALAN PERMAS 4/3 BANDAR BARU PERMAS JAY",
+        "total": "22.60"
+      },
+      "processing_time": 2.8320682048797607,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 44,
+      "total_tokens": 3780
+    },
+    {
+      "image_path": "images\\028.jpg",
+      "transcription": "{\"company\": \"UNIHAPPA INTERNATIONAL SDN BHD\", \"date\": \"25/03/2018\", \"address\": \"12, Jalan Tampoi 7/4,Kawasan Perindustrian Tampoi, 81200 Johor Bahru, Johor\", \"total\": \"8.50\"}",
+      "ground_truth_path": "gdt\\028.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "25 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$8.50"
+      },
+      "processing_time": 2.947467565536499,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 59,
+      "total_tokens": 3795
+    },
+    {
+      "image_path": "images\\029.jpg",
+      "transcription": "{\"company\": \"UNIHACKA INTERNATIONAL SDN BHD\", \"date\": \"20/03/2018\", \"address\": \"12, Jalan Tampoi 7/4, Kawasan Perindustrian, Tampoi 81200 Johor Bahru, Johor\", \"total\": \"$6.60\"}",
+      "ground_truth_path": "gdt\\029.json",
+      "ground_truth": {
+        "company": "UNIHAKKA INTERNATIONAL SDN BHD",
+        "date": "20 MAR 2018",
+        "address": "12, JALAN TAMPOI 7/4,KAWASAN PERINDUSTRIAN TAMPOI,81200 JOHOR BAHRU,JOHOR",
+        "total": "$6.60"
+      },
+      "processing_time": 2.8473172187805176,
+      "error": null,
+      "input_tokens": 3736,
+      "output_tokens": 62,
+      "total_tokens": 3798
+    }
+  ]
+}

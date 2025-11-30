@@ -1,0 +1,368 @@
+{
+  "timestamp": "2025-11-30T06:32:23.135969",
+  "models_tested": [
+    "Claude-haiku-4-5",
+    "Claude-sonnet-4-5",
+    "Gemini-2.5-flash",
+    "Gemini-2.5-pro",
+    "Gemini-3-pro-preview",
+    "GPT-4.1-mini",
+    "GPT-4.1-nano",
+    "GPT-4.1",
+    "GPT-5-mini",
+    "GPT-5-nano",
+    "GPT-5.1",
+    "GPT-5"
+  ],
+  "summary": {
+    "Claude-haiku-4-5": {
+      "total_tests": 120,
+      "correct_detections": 81,
+      "accuracy": 0.675,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.6666666666666666,
+          "count": 30,
+          "correct": 20
+        },
+        "180": {
+          "accuracy": 0.9333333333333333,
+          "count": 30,
+          "correct": 28
+        },
+        "270": {
+          "accuracy": 0.1,
+          "count": 30,
+          "correct": 3
+        }
+      },
+      "mean_processing_time": 1.6912300646305085
+    },
+    "Claude-sonnet-4-5": {
+      "total_tests": 120,
+      "correct_detections": 98,
+      "accuracy": 0.8166666666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.7333333333333333,
+          "count": 30,
+          "correct": 22
+        },
+        "180": {
+          "accuracy": 0.9666666666666667,
+          "count": 30,
+          "correct": 29
+        },
+        "270": {
+          "accuracy": 0.5666666666666667,
+          "count": 30,
+          "correct": 17
+        }
+      },
+      "mean_processing_time": 3.1508997400601704
+    },
+    "Gemini-2.5-flash": {
+      "total_tests": 120,
+      "correct_detections": 66,
+      "accuracy": 0.55,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.4,
+          "count": 30,
+          "correct": 12
+        },
+        "180": {
+          "accuracy": 0.36666666666666664,
+          "count": 30,
+          "correct": 11
+        },
+        "270": {
+          "accuracy": 0.43333333333333335,
+          "count": 30,
+          "correct": 13
+        }
+      },
+      "mean_processing_time": 5.169758234421412
+    },
+    "Gemini-2.5-pro": {
+      "total_tests": 120,
+      "correct_detections": 79,
+      "accuracy": 0.6583333333333333,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.4666666666666667,
+          "count": 30,
+          "correct": 14
+        },
+        "180": {
+          "accuracy": 0.7,
+          "count": 30,
+          "correct": 21
+        },
+        "270": {
+          "accuracy": 0.4666666666666667,
+          "count": 30,
+          "correct": 14
+        }
+      },
+      "mean_processing_time": 7.994064603249232
+    },
+    "Gemini-3-pro-preview": {
+      "total_tests": 120,
+      "correct_detections": 100,
+      "accuracy": 0.8333333333333334,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.9,
+          "count": 30,
+          "correct": 27
+        },
+        "180": {
+          "accuracy": 0.9666666666666667,
+          "count": 30,
+          "correct": 29
+        },
+        "270": {
+          "accuracy": 0.4666666666666667,
+          "count": 30,
+          "correct": 14
+        }
+      },
+      "mean_processing_time": 57.02542668581009
+    },
+    "GPT-4.1-mini": {
+      "total_tests": 120,
+      "correct_detections": 89,
+      "accuracy": 0.7416666666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.9333333333333333,
+          "count": 30,
+          "correct": 28
+        },
+        "90": {
+          "accuracy": 0.1,
+          "count": 30,
+          "correct": 3
+        },
+        "180": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "270": {
+          "accuracy": 0.9333333333333333,
+          "count": 30,
+          "correct": 28
+        }
+      },
+      "mean_processing_time": 1.2570373634497325
+    },
+    "GPT-4.1-nano": {
+      "total_tests": 120,
+      "correct_detections": 39,
+      "accuracy": 0.325,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.13333333333333333,
+          "count": 30,
+          "correct": 4
+        },
+        "90": {
+          "accuracy": 0.06666666666666667,
+          "count": 30,
+          "correct": 2
+        },
+        "180": {
+          "accuracy": 0.6666666666666666,
+          "count": 30,
+          "correct": 20
+        },
+        "270": {
+          "accuracy": 0.43333333333333335,
+          "count": 30,
+          "correct": 13
+        }
+      },
+      "mean_processing_time": 1.627567954858144,
+      "total_input_tokens": 361636,
+      "total_output_tokens": 180,
+      "total_tokens": 361816,
+      "average_input_tokens": 3013.633333333333,
+      "average_output_tokens": 1.5,
+      "average_total_tokens": 3015.133333333333
+    },
+    "GPT-4.1": {
+      "total_tests": 120,
+      "correct_detections": 89,
+      "accuracy": 0.7416666666666667,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.8666666666666667,
+          "count": 30,
+          "correct": 26
+        },
+        "180": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "270": {
+          "accuracy": 0.1,
+          "count": 30,
+          "correct": 3
+        }
+      },
+      "mean_processing_time": 2.2486191272735594
+    },
+    "GPT-5-mini": {
+      "total_tests": 120,
+      "correct_detections": 95,
+      "accuracy": 0.7916666666666666,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.8,
+          "count": 30,
+          "correct": 24
+        },
+        "180": {
+          "accuracy": 0.9666666666666667,
+          "count": 30,
+          "correct": 29
+        },
+        "270": {
+          "accuracy": 0.4,
+          "count": 30,
+          "correct": 12
+        }
+      },
+      "mean_processing_time": 10.812206494808198
+    },
+    "GPT-5-nano": {
+      "total_tests": 120,
+      "correct_detections": 84,
+      "accuracy": 0.7,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 0.9,
+          "count": 30,
+          "correct": 27
+        },
+        "90": {
+          "accuracy": 0.5,
+          "count": 30,
+          "correct": 15
+        },
+        "180": {
+          "accuracy": 0.9666666666666667,
+          "count": 30,
+          "correct": 29
+        },
+        "270": {
+          "accuracy": 0.43333333333333335,
+          "count": 30,
+          "correct": 13
+        }
+      },
+      "mean_processing_time": 12.841600811481475
+    },
+    "GPT-5.1": {
+      "total_tests": 120,
+      "correct_detections": 93,
+      "accuracy": 0.775,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.5,
+          "count": 30,
+          "correct": 15
+        },
+        "180": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "270": {
+          "accuracy": 0.6,
+          "count": 30,
+          "correct": 18
+        }
+      },
+      "mean_processing_time": 2.3262540022532145,
+      "total_input_tokens": 121000,
+      "total_output_tokens": 1200,
+      "total_tokens": 122200,
+      "average_input_tokens": 1008.3333333333334,
+      "average_output_tokens": 10,
+      "average_total_tokens": 1018.3333333333334
+    },
+    "GPT-5": {
+      "total_tests": 120,
+      "correct_detections": 100,
+      "accuracy": 0.8333333333333334,
+      "accuracy_by_rotation": {
+        "0": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "90": {
+          "accuracy": 0.6,
+          "count": 30,
+          "correct": 18
+        },
+        "180": {
+          "accuracy": 1.0,
+          "count": 30,
+          "correct": 30
+        },
+        "270": {
+          "accuracy": 0.7333333333333333,
+          "count": 30,
+          "correct": 22
+        }
+      },
+      "mean_processing_time": 18.248990261554717
+    }
+  },
+  "total_images": 30
+}
