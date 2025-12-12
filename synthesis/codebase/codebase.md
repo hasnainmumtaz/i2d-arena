@@ -1,0 +1,193 @@
+# Codebase Documentation
+
+This directory contains comprehensive documentation for the Image Transcriber project. The project is a flexible Python application that transcribes images using various LLM (Large Language Model) providers with vision capabilities, built with LangChain for a unified interface.
+
+## Project Overview
+
+The Image Transcriber is designed to extract text and information from images using multiple LLM providers. It supports single image processing, batch processing, and model comparison modes.
+
+## Documentation Structure
+
+### Core Modules
+
+1. **[Image Transcriber Module](image-transcriber.md)**
+   - Base `ImageTranscriber` class
+   - Provider-specific implementations (OpenAI, Anthropic, Google, MiniMax, Groq, OpenRouter, Ollama, HuggingFace)
+   - Factory function for creating transcribers
+   - CLI interface with three modes: single, batch, and comparison
+
+2. **[Batch Processing Module](batch-processing.md)**
+   - `BatchProcessor` class for processing multiple images
+   - `TranscriptionResult` and `BatchProcessingResult` dataclasses
+   - Parallel and sequential processing support
+   - Ground truth matching and loading
+
+3. **[Evaluation Module](evaluation.md)**
+   - `TranscriptionEvaluator` class
+   - `EvaluationMetrics` dataclass
+   - Comparison with ground truth data
+   - Field-level accuracy metrics
+   - Detailed reporting
+
+4. **[Model Comparison Module](model-comparison.md)**
+   - `ModelComparator` class
+   - `ModelComparisonResult` dataclass
+   - Side-by-side model performance comparison
+   - Comprehensive comparison reports
+
+5. **[Orientation Test Module](orientation-test.md)**
+   - `OrientationTester` class
+   - `OrientationTestResult`, `OrientationTestSummary`, `OrientationTestReport` dataclasses
+   - Image rotation and orientation detection testing
+   - Multi-model orientation accuracy evaluation
+   - Parallel processing support
+
+6. **[Result Compilation Module](result-compilation.md)**
+   - `compile_comparison_results()` function
+   - `compile_orientation_results()` function
+   - Consolidates individual model results into summary reports
+   - Handles field normalization and data aggregation
+
+7. **[Dashboard Generation Module](dashboard-generation.md)**
+   - `generate_html()` function
+   - Interactive HTML dashboard generation
+   - Chart.js visualizations
+   - Bootstrap-based UI
+   - Comprehensive result visualization
+
+8. **[MiniMax CLI Usage Guide](minimax-cli-usage.md)**
+   - Complete CLI usage examples for MiniMax provider
+   - Environment variable configuration
+   - Model comparison examples
+   - Troubleshooting guide
+
+### Architecture
+
+- **[Architecture Overview](architecture.md)**
+  - System architecture
+  - Module relationships
+  - Data flow
+  - Design patterns used
+
+## Key Features
+
+- **Multi-Provider Support**: Works with OpenAI, Anthropic, Google, MiniMax, Groq, OpenRouter, Ollama, and HuggingFace
+- **Structured Output**: Extracts structured JSON data from invoices/receipts
+- **Batch Processing**: Process multiple images with parallel execution
+- **As-is Data Extraction**: Compare performance of different models for data extraction
+- **Orientation Extraction Test**: Test model capabilities in detecting image orientation
+- **Evaluation**: Compare transcriptions with ground truth data
+- **Result Compilation**: Consolidate individual model results into summary reports
+- **Interactive Dashboard**: Generate HTML dashboard with visualizations and metrics
+- **CLI Interface**: Easy-to-use command-line interface
+
+## File Structure
+
+```
+.
+├── image_transcriber.py      # Main transcriber module
+├── batch_processor.py         # Batch processing functionality
+├── evaluator.py               # Evaluation and metrics
+├── model_comparator.py        # As-is data extraction functionality
+├── orientation_test.py        # Orientation testing functionality
+├── compile_results.py         # Result compilation script
+├── generate_dashboard.py      # Dashboard generation script
+├── dashboard.html             # Generated results dashboard
+├── model_comparison_report.json    # Compiled comparison results
+├── orientation_test_results.json   # Compiled orientation results
+├── results/                   # Individual model results
+│   ├── comparison/           # Individual comparison results
+│   └── orientation/          # Individual orientation results
+├── requirements.txt           # Python dependencies
+├── README.md                  # User documentation
+└── codebase/                  # This documentation
+    ├── codebase.md            # Main documentation index (this file)
+    ├── image-transcriber.md   # Image transcriber module docs
+    ├── batch-processing.md    # Batch processing module docs
+    ├── evaluation.md          # Evaluation module docs
+    ├── model-comparison.md    # As-is data extraction module docs
+    ├── orientation-test.md     # Orientation test module docs
+    ├── result-compilation.md  # Result compilation module docs
+    ├── dashboard-generation.md # Dashboard generation module docs
+    └── architecture.md        # Architecture overview
+```
+
+## Usage Patterns
+
+### Single Image Processing
+```python
+from image_transcriber import create_transcriber
+
+transcriber = create_transcriber(provider="openai", model_name="gpt-4o")
+result = transcriber.transcribe("image.jpg")
+```
+
+### Batch Processing
+```python
+from image_transcriber import create_transcriber
+from batch_processor import BatchProcessor
+
+transcriber = create_transcriber(provider="openai")
+processor = BatchProcessor(transcriber, images_dir="images", ground_truth_dir="gdt")
+result = processor.process_batch()
+```
+
+### Model Comparison
+```python
+from model_comparator import ModelComparator
+
+comparator = ModelComparator(images_dir="images", ground_truth_dir="gdt")
+comparison = comparator.compare_models(model_configs)
+```
+
+### Orientation Testing
+```python
+from orientation_test import OrientationTester
+
+tester = OrientationTester(images_dir="images")
+report = tester.test_batch(model_configs, max_images=30, parallel=True)
+tester.print_summary(report)
+tester.save_results(report, "orientation_test_results.json")
+```
+
+### Result Compilation and Dashboard
+```python
+# Compile results
+from compile_results import compile_comparison_results, compile_orientation_results
+
+compile_comparison_results()
+compile_orientation_results()
+
+# Generate dashboard
+from generate_dashboard import main as generate_dashboard
+generate_dashboard()  # Creates dashboard.html
+```
+
+## Important Notes
+
+- **Before making changes**: Always consult the relevant documentation files in this codebase folder
+- **API Keys**: The system supports loading API keys from `.env` files or environment variables
+- **Structured Output**: OpenAI transcriber supports structured JSON output for invoice/receipt extraction
+- **Error Handling**: All modules include comprehensive error handling and fallback mechanisms
+- **Parallel Processing**: Batch processor supports parallel execution for faster processing
+
+## Dependencies
+
+- `langchain-core` - Core LangChain functionality
+- `langchain-openai` - OpenAI integration (also used for MiniMax)
+- `langchain-anthropic` - Anthropic integration
+- `langchain-google-genai` - Google integration
+- `langchain-ollama` - Ollama integration
+- `python-dotenv` - Environment variable management
+- `openai` - Direct OpenAI client (for structured output and MiniMax)
+- `requests` - HTTP requests (for HuggingFace)
+- `Pillow` (PIL) - Image processing (for orientation tests)
+
+## Contributing
+
+When making changes to the codebase:
+1. Review the relevant documentation file in this `codebase/` folder
+2. Understand the module's purpose and dependencies
+3. Ensure changes don't break existing functionality
+4. Update documentation if adding new features
+

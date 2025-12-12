@@ -1,0 +1,1995 @@
+"""
+Image Transcriber using LLM Models with LangChain
+Supports multiple LLM providers for image transcription/description
+"""
+
+import os
+from typing import Optional, Union, Dict
+from pathlib import Path
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # override=True ensures .env file values take precedence over system environment variables
+    # This allows local .env file to override system-wide environment variables
+    load_dotenv(override=True)
+except ImportError:
+    # python-dotenv not installed, skip loading .env file
+    import warnings
+    warnings.warn("python-dotenv not installed. Install it with 'pip install python-dotenv' to use .env files.")
+
+
+class ImageTranscriber:
+    """Base class for image transcription using LangChain"""
+    
+    def __init__(self, model_name: Optional[str] = None, api_key: Optional[str] = None, **kwargs):
+        self.model_name = model_name
+        self.api_key = api_key
+        self.kwargs = kwargs
+        self._init_model()
+    
+    def _init_model(self):
+        """Initialize the LangChain model - to be implemented by subclasses"""
+        raise NotImplementedError("Subclasses must implement _init_model method")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = "Transcribe or describe everything you see in this image in detail.") -> str:
+        """Transcribe image using LangChain"""
+        import base64
+        from langchain_core.messages import HumanMessage
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            # For URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Create message with image
+        message = HumanMessage(
+            content=[
+                {"type": "text", "text": prompt},
+                image_content
+            ]
+        )
+        
+        # Invoke model
+        response = self.model.invoke([message])
+        # Store token usage in instance for retrieval
+        self._last_token_usage = self._extract_token_usage(response)
+        return response.content
+    
+    def _extract_token_usage(self, response) -> Dict:
+        """Extract token usage from LangChain response"""
+        token_usage = {
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None
+        }
+        
+        # Try to get token usage from response metadata
+        if hasattr(response, 'response_metadata'):
+            metadata = response.response_metadata or {}
+            # OpenAI format
+            if 'token_usage' in metadata:
+                usage = metadata['token_usage']
+                token_usage["input_tokens"] = usage.get('prompt_tokens') or usage.get('input_tokens')
+                token_usage["output_tokens"] = usage.get('completion_tokens') or usage.get('output_tokens')
+                token_usage["total_tokens"] = usage.get('total_tokens')
+            # Anthropic format
+            elif 'usage' in metadata:
+                usage = metadata['usage']
+                token_usage["input_tokens"] = usage.get('input_tokens')
+                token_usage["output_tokens"] = usage.get('output_tokens')
+                token_usage["total_tokens"] = usage.get('total_tokens')
+        
+        return token_usage
+    
+    def get_last_token_usage(self) -> Dict:
+        """Get token usage from the last transcription"""
+        return getattr(self, '_last_token_usage', {
+            "input_tokens": None,
+            "output_tokens": None,
+            "total_tokens": None
+        })
+
+
+class OpenAITranscriber(ImageTranscriber):
+    """Transcribe images using OpenAI GPT-4 Vision via LangChain"""
+    
+    # Models that support vision/image inputs
+    VISION_MODELS = {
+        "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4-vision-preview",
+        "gpt-4", "gpt-4-turbo-preview", "gpt-4-1106-preview", "gpt-4-0125-preview"
+    }
+    
+    def _init_model(self):
+        try:
+            from langchain_openai import ChatOpenAI
+            api_key = self.api_key or os.getenv("OPENAI_API_KEY")
+            model_name = self.model_name or "gpt-4o"
+            
+            # Build model kwargs - only include parameters if provided
+            model_kwargs = {
+                "model": model_name,
+                "api_key": api_key
+            }
+            
+            # Only add max_tokens if explicitly provided (some models don't support it)
+            if "max_tokens" in self.kwargs:
+                model_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+            
+            # Only add temperature if explicitly provided (some models don't support it)
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatOpenAI(**model_kwargs)
+            self.api_key = api_key
+            self.model_name = model_name
+        except ImportError:
+            raise ImportError("Please install langchain-openai: pip install langchain-openai")
+    
+    def _supports_vision(self) -> bool:
+        """
+        Check if the current model supports vision/image inputs
+        
+        Note: This is a best-effort check. Some newer models may not be in the list.
+        The actual API call will validate this, and we'll catch the error.
+        """
+        model_name = (self.model_name or "gpt-4o").lower()
+        
+        # Check if model is explicitly in known vision models
+        if any(vision_model.lower() in model_name for vision_model in self.VISION_MODELS):
+            return True
+        
+        # Check for vision indicators
+        if "vision" in model_name:
+            return True
+        
+        # gpt-4o and gpt-4o-mini support vision, but be careful with other "o" models
+        if model_name.startswith("gpt-4o") or model_name.startswith("gpt-4-o"):
+            return True
+        
+        # Default to True and let API error handle it for unknown models
+        # This allows trying new models that might support vision
+        return True
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using OpenAI GPT-4 Vision
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        import re
+        from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Define JSON schema for structured output
+        json_schema = {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": ["string", "null"],
+                    "description": "Company or business name"
+                },
+                "date": {
+                    "type": ["string", "null"],
+                    "description": "Date in DD/MM/YYYY format"
+                },
+                "address": {
+                    "type": ["string", "null"],
+                    "description": "Full address"
+                },
+                "total": {
+                    "type": ["string", "null"],
+                    "description": "Total amount as string"
+                }
+            },
+            "required": ["company", "date", "address", "total"],
+            "additionalProperties": False
+        }
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Use OpenAI's structured output via direct client
+                from openai import OpenAI
+                client = OpenAI(api_key=self.api_key or os.getenv("OPENAI_API_KEY"))
+                
+                # Build request kwargs - only include parameters if provided
+                request_kwargs = {
+                    "model": self.model_name or "gpt-4o",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                image_content
+                            ]
+                        }
+                    ],
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "invoice_extraction",
+                            "strict": True,
+                            "schema": json_schema
+                        }
+                    }
+                }
+                
+                # Only add max_tokens if explicitly provided (some models don't support it)
+                if "max_tokens" in self.kwargs:
+                    request_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+                
+                # Only add temperature if explicitly provided (some models don't support it)
+                if "temperature" in self.kwargs:
+                    request_kwargs["temperature"] = self.kwargs["temperature"]
+                
+                try:
+                    response = client.chat.completions.create(**request_kwargs)
+                except Exception as api_error:
+                    # Check if error is about vision not being supported
+                    error_str = str(api_error).lower()
+                    if "image_url" in error_str or "vision" in error_str or "content type" in error_str:
+                        raise ValueError(
+                            f"Model '{self.model_name}' does not support vision/image inputs. "
+                            f"Please use a vision-capable model like 'gpt-4o', 'gpt-4o-mini', or 'gpt-4-turbo'."
+                        ) from api_error
+                    raise
+                
+                # Store token usage
+                if hasattr(response, 'usage') and response.usage:
+                    self._last_token_usage = {
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else None,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
+                        "total_tokens": response.usage.total_tokens if hasattr(response.usage, 'total_tokens') else None
+                    }
+                else:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                result = json.loads(response.choices[0].message.content)
+                return result
+            except Exception as e:
+                # Fallback to regular LangChain if structured output fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(e)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class AnthropicTranscriber(ImageTranscriber):
+    """Transcribe images using Anthropic Claude via LangChain"""
+    
+    def _init_model(self):
+        try:
+            from langchain_anthropic import ChatAnthropic
+            api_key = self.api_key or os.getenv("ANTHROPIC_API_KEY")
+            model_name = self.model_name or "claude-3-5-sonnet-20241022"
+            
+            # Build model kwargs - only include parameters if provided
+            model_kwargs = {
+                "model": model_name,
+                "api_key": api_key
+            }
+            
+            # Only add max_tokens if explicitly provided (some models don't support it)
+            if "max_tokens" in self.kwargs:
+                model_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+            
+            # Only add temperature if explicitly provided (some models don't support it)
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatAnthropic(**model_kwargs)
+        except ImportError:
+            raise ImportError("Please install langchain-anthropic: pip install langchain-anthropic")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Anthropic Claude
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        from pydantic import BaseModel, Field
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Define Pydantic model for structured output
+                class InvoiceExtraction(BaseModel):
+                    company: str | None = Field(None, description="Company or business name")
+                    date: str | None = Field(None, description="Date in DD/MM/YYYY format")
+                    address: str | None = Field(None, description="Full address")
+                    total: str | None = Field(None, description="Total amount as string")
+                
+                # Use LangChain's with_structured_output for structured extraction
+                # This ensures the output matches the schema exactly
+                structured_model = self.model.with_structured_output(InvoiceExtraction)
+                
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": prompt},
+                        image_content
+                    ]
+                )
+                
+                # Invoke structured model
+                structured_response = structured_model.invoke([message])
+                
+                # Try to get token usage from the underlying response if available
+                # Note: with_structured_output may not preserve response metadata
+                # We'll try to extract it, but if not available, we'll invoke once more to get token usage
+                try:
+                    # Check if the response has metadata (some LangChain versions preserve it)
+                    if hasattr(structured_response, 'response_metadata'):
+                        self._last_token_usage = self._extract_token_usage(structured_response)
+                    else:
+                        # Fallback: invoke regular model once to get token usage
+                        # This is not ideal but ensures we track token usage
+                        regular_response = self.model.invoke([message])
+                        self._last_token_usage = self._extract_token_usage(regular_response)
+                except:
+                    # If we can't get token usage, set to None
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Convert Pydantic model to dict
+                if isinstance(structured_response, BaseModel):
+                    result = structured_response.model_dump()
+                else:
+                    result = dict(structured_response) if hasattr(structured_response, '__dict__') else structured_response
+                
+                return result
+            except Exception as e:
+                # Fallback to regular LangChain if structured output fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class GoogleTranscriber(ImageTranscriber):
+    """Transcribe images using Google Gemini via LangChain"""
+    
+    def _init_model(self):
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            api_key = self.api_key or os.getenv("GOOGLE_API_KEY")
+            model_name = self.model_name or "gemini-pro-vision"
+            # Build model kwargs - only include parameters if provided
+            model_kwargs = {
+                "model": model_name,
+                "google_api_key": api_key
+            }
+            
+            # Only add temperature if explicitly provided (some models don't support it)
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatGoogleGenerativeAI(**model_kwargs)
+        except ImportError:
+            raise ImportError("Please install langchain-google-genai: pip install langchain-google-genai")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Google Gemini
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        from pydantic import BaseModel, Field
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Define Pydantic model for structured output
+                class InvoiceExtraction(BaseModel):
+                    company: str | None = Field(None, description="Company or business name")
+                    date: str | None = Field(None, description="Date in DD/MM/YYYY format")
+                    address: str | None = Field(None, description="Full address")
+                    total: str | None = Field(None, description="Total amount as string")
+                
+                # Use LangChain's with_structured_output for structured extraction
+                structured_model = self.model.with_structured_output(InvoiceExtraction)
+                
+                message = HumanMessage(
+                    content=[
+                        {"type": "text", "text": prompt},
+                        image_content
+                    ]
+                )
+                
+                # Invoke structured model
+                structured_response = structured_model.invoke([message])
+                
+                # Try to get token usage
+                try:
+                    if hasattr(structured_response, 'response_metadata'):
+                        self._last_token_usage = self._extract_token_usage(structured_response)
+                    else:
+                        regular_response = self.model.invoke([message])
+                        self._last_token_usage = self._extract_token_usage(regular_response)
+                except:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Convert Pydantic model to dict
+                if isinstance(structured_response, BaseModel):
+                    result = structured_response.model_dump()
+                else:
+                    result = dict(structured_response) if hasattr(structured_response, '__dict__') else structured_response
+                
+                return result
+            except Exception as e:
+                # Fallback to regular LangChain if structured output fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class MiniMaxTranscriber(ImageTranscriber):
+    """Transcribe images using MiniMax models via OpenAI-compatible API"""
+    
+    # Supported MiniMax models
+    SUPPORTED_MODELS = {
+        "MiniMax-M2",
+        "MiniMax-M2-Stable"
+    }
+    
+    def _init_model(self):
+        try:
+            from langchain_openai import ChatOpenAI
+            api_key = self.api_key or os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY")
+            model_name = self.model_name or "MiniMax-M2"
+            
+            # Get base URL from kwargs or environment variable
+            # For international users: https://api.minimax.io/v1
+            # For users in China: https://api.minimaxi.com/v1
+            base_url = self.kwargs.get("base_url") or os.getenv("MINIMAX_BASE_URL") or os.getenv("OPENAI_BASE_URL") or "https://api.minimax.io/v1"
+            
+            # Build model kwargs
+            model_kwargs = {
+                "model": model_name,
+                "api_key": api_key,
+                "base_url": base_url
+            }
+            
+            # Only add max_tokens if explicitly provided
+            if "max_tokens" in self.kwargs:
+                model_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+            
+            # Only add temperature if explicitly provided
+            # Note: MiniMax temperature range is (0.0, 1.0], recommended: 1.0
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            else:
+                # Default to 1.0 as recommended by MiniMax
+                model_kwargs["temperature"] = 1.0
+            
+            self.model = ChatOpenAI(**model_kwargs)
+            self.api_key = api_key
+            self.model_name = model_name
+            self.base_url = base_url
+        except ImportError:
+            raise ImportError("Please install langchain-openai: pip install langchain-openai")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using MiniMax models
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Check if reasoning_split is requested
+        reasoning_split = self.kwargs.get("reasoning_split", False)
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Use OpenAI client directly for better control over extra_body parameter
+                from openai import OpenAI
+                client = OpenAI(
+                    api_key=self.api_key or os.getenv("MINIMAX_API_KEY") or os.getenv("OPENAI_API_KEY"),
+                    base_url=self.base_url
+                )
+                
+                # Build request kwargs
+                request_kwargs = {
+                    "model": self.model_name or "MiniMax-M2",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                image_content
+                            ]
+                        }
+                    ]
+                }
+                
+                # Add extra_body for reasoning_split if requested
+                if reasoning_split:
+                    request_kwargs["extra_body"] = {"reasoning_split": True}
+                
+                # Only add max_tokens if explicitly provided
+                if "max_tokens" in self.kwargs:
+                    request_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+                
+                # Temperature (default to 1.0 as recommended)
+                request_kwargs["temperature"] = self.kwargs.get("temperature", 1.0)
+                
+                try:
+                    response = client.chat.completions.create(**request_kwargs)
+                except Exception as api_error:
+                    # Check if error is about vision not being supported
+                    error_str = str(api_error).lower()
+                    if "image_url" in error_str or "vision" in error_str or "content type" in error_str:
+                        raise ValueError(
+                            f"Model '{self.model_name}' may not support vision/image inputs. "
+                            f"Please check MiniMax documentation for vision support."
+                        ) from api_error
+                    raise
+                
+                # Store token usage
+                if hasattr(response, 'usage') and response.usage:
+                    self._last_token_usage = {
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else None,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
+                        "total_tokens": response.usage.total_tokens if hasattr(response.usage, 'total_tokens') else None
+                    }
+                else:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Extract content
+                message = response.choices[0].message
+                content = message.content
+                
+                # Handle reasoning_details if reasoning_split is enabled
+                if reasoning_split and hasattr(message, 'reasoning_details') and message.reasoning_details:
+                    # Store reasoning details for potential future use
+                    self._last_reasoning_details = message.reasoning_details
+                
+                # Try to parse JSON from response
+                try:
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, return raw content
+                    return {"raw_response": content}
+            except Exception as e:
+                # Fallback to regular LangChain if direct API call fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class OllamaTranscriber(ImageTranscriber):
+    """Transcribe images using Ollama (local models like LLaVA) via LangChain"""
+    
+    def _init_model(self):
+        try:
+            from langchain_ollama import ChatOllama
+            model_name = self.model_name or "llava"
+            base_url = self.kwargs.get("base_url", "http://localhost:11434")
+            # Build model kwargs - only include parameters if provided
+            model_kwargs = {
+                "model": model_name,
+                "base_url": base_url
+            }
+            
+            # Only add temperature if explicitly provided (some models don't support it)
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatOllama(**model_kwargs)
+        except ImportError:
+            raise ImportError("Please install langchain-ollama: pip install langchain-ollama")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Ollama - handles base64 encoding for local files
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            # For URLs, download and encode
+            import requests
+            response = requests.get(image_path_str)
+            response.raise_for_status()
+            image_data = response.content
+        else:
+            # For local files, read directly
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+        
+        # Ollama expects base64 encoded images
+        base64_image = base64.b64encode(image_data).decode('utf-8')
+        
+        # Create message - Ollama may need images passed differently
+        # Try standard format first
+        message = HumanMessage(
+            content=[
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": f"data:image/jpeg;base64,{base64_image}"}
+            ]
+        )
+        
+        try:
+            response = self.model.invoke([message])
+            content = response.content
+            
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            
+            # If structured output requested, try to parse JSON
+            if structured:
+                try:
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    
+                    # Try to parse as JSON
+                    if content.strip().startswith('{'):
+                        return json.loads(content)
+                    else:
+                        # If not valid JSON, return with error
+                        return {"raw_response": content, "error": "Response is not valid JSON"}
+                except json.JSONDecodeError as e:
+                    return {"raw_response": content, "error": f"JSON parsing failed: {str(e)}"}
+            
+            return content
+        except Exception as e:
+            # Fallback: some Ollama setups might need different format
+            try:
+                message = HumanMessage(content=[prompt, base64_image])
+                response = self.model.invoke([message])
+                content = response.content
+                
+                # Store token usage
+                self._last_token_usage = self._extract_token_usage(response)
+                
+                # If structured output requested, try to parse JSON
+                if structured:
+                    try:
+                        if "```json" in content:
+                            json_start = content.find("```json") + 7
+                            json_end = content.find("```", json_start)
+                            content = content[json_start:json_end].strip()
+                        elif "```" in content:
+                            json_start = content.find("```") + 3
+                            json_end = content.find("```", json_start)
+                            content = content[json_start:json_end].strip()
+                        
+                        if content.strip().startswith('{'):
+                            return json.loads(content)
+                        else:
+                            return {"raw_response": content, "error": "Response is not valid JSON"}
+                    except json.JSONDecodeError as parse_error:
+                        return {"raw_response": content, "error": f"JSON parsing failed: {str(parse_error)}"}
+                
+                return content
+            except Exception as fallback_error:
+                return {"raw_response": str(e), "error": str(fallback_error)}
+
+
+class GroqTranscriber(ImageTranscriber):
+    """Transcribe images using Groq models via OpenAI-compatible API"""
+    
+    # Supported Groq models (note: vision support may vary)
+    SUPPORTED_MODELS = {
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "llama-3.3-8b-instant",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+        "gemma2-27b-it",
+        "openai/gpt-oss-20b"
+    }
+    
+    def _init_model(self):
+        try:
+            from langchain_openai import ChatOpenAI
+            api_key = self.api_key or os.getenv("GROQ_API_KEY")
+            model_name = self.model_name or "llama-3.1-70b-versatile"
+            
+            # Groq base URL
+            base_url = self.kwargs.get("base_url") or os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
+            
+            # Build model kwargs
+            model_kwargs = {
+                "model": model_name,
+                "api_key": api_key,
+                "base_url": base_url
+            }
+            
+            # Only add max_tokens if explicitly provided
+            if "max_tokens" in self.kwargs:
+                model_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+            
+            # Only add temperature if explicitly provided
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatOpenAI(**model_kwargs)
+            self.api_key = api_key
+            self.model_name = model_name
+            self.base_url = base_url
+        except ImportError:
+            raise ImportError("Please install langchain-openai: pip install langchain-openai")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Groq models
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Use OpenAI client directly for better control
+                from openai import OpenAI
+                client = OpenAI(
+                    api_key=self.api_key or os.getenv("GROQ_API_KEY"),
+                    base_url=self.base_url
+                )
+                
+                # Build request kwargs
+                request_kwargs = {
+                    "model": self.model_name or "llama-3.1-70b-versatile",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                image_content
+                            ]
+                        }
+                    ]
+                }
+                
+                # Only add max_tokens if explicitly provided
+                if "max_tokens" in self.kwargs:
+                    request_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+                
+                # Only add temperature if explicitly provided
+                if "temperature" in self.kwargs:
+                    request_kwargs["temperature"] = self.kwargs["temperature"]
+                
+                try:
+                    response = client.chat.completions.create(**request_kwargs)
+                except Exception as api_error:
+                    # Check if error is about vision not being supported
+                    error_str = str(api_error).lower()
+                    if "image_url" in error_str or "vision" in error_str or "content type" in error_str:
+                        raise ValueError(
+                            f"Model '{self.model_name}' may not support vision/image inputs. "
+                            f"Please check Groq documentation for vision support or use a text-only transcription approach."
+                        ) from api_error
+                    raise
+                
+                # Store token usage
+                if hasattr(response, 'usage') and response.usage:
+                    self._last_token_usage = {
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else None,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
+                        "total_tokens": response.usage.total_tokens if hasattr(response.usage, 'total_tokens') else None
+                    }
+                else:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Extract content
+                message = response.choices[0].message
+                content = message.content
+                
+                # Try to parse JSON from response
+                try:
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, return raw content
+                    return {"raw_response": content}
+            except Exception as e:
+                # Fallback to regular LangChain if direct API call fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class OpenRouterTranscriber(ImageTranscriber):
+    """Transcribe images using OpenRouter models via OpenAI-compatible API"""
+    
+    # Supported OpenRouter models (note: vision support may vary)
+    # OpenRouter supports many models in format: provider/model-name
+    # Examples: openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro-vision
+    SUPPORTED_MODELS = {
+        "openai/gpt-4o",
+        "openai/gpt-4o-mini",
+        "openai/gpt-4-turbo",
+        "anthropic/claude-3.5-sonnet",
+        "anthropic/claude-3-opus",
+        "google/gemini-pro-vision",
+        "google/gemini-pro-1.5"
+    }
+    
+    def _init_model(self):
+        try:
+            from langchain_openai import ChatOpenAI
+            api_key = self.api_key or os.getenv("OPENROUTER_API_KEY")
+            model_name = self.model_name or "openai/gpt-4o"
+            
+            # OpenRouter base URL
+            base_url = self.kwargs.get("base_url") or os.getenv("OPENROUTER_BASE_URL") or "https://openrouter.ai/api/v1"
+            
+            # Get optional headers for OpenRouter
+            http_referer = self.kwargs.get("http_referer") or os.getenv("OPENROUTER_HTTP_REFERER")
+            x_title = self.kwargs.get("x_title") or os.getenv("OPENROUTER_X_TITLE")
+            
+            # Build default headers if provided
+            default_headers = {}
+            if http_referer:
+                default_headers["HTTP-Referer"] = http_referer
+            if x_title:
+                default_headers["X-Title"] = x_title
+            
+            # Build model kwargs
+            model_kwargs = {
+                "model": model_name,
+                "api_key": api_key,
+                "base_url": base_url
+            }
+            
+            # Note: LangChain ChatOpenAI doesn't support default_headers directly
+            # We'll use them in direct OpenAI client calls in transcribe method
+            
+            # Only add max_tokens if explicitly provided
+            if "max_tokens" in self.kwargs:
+                model_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+            
+            # Only add temperature if explicitly provided
+            if "temperature" in self.kwargs:
+                model_kwargs["temperature"] = self.kwargs["temperature"]
+            
+            self.model = ChatOpenAI(**model_kwargs)
+            self.api_key = api_key
+            self.model_name = model_name
+            self.base_url = base_url
+            self.default_headers = default_headers
+        except ImportError:
+            raise ImportError("Please install langchain-openai: pip install langchain-openai")
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using OpenRouter models
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import base64
+        import json
+        from langchain_core.messages import HumanMessage
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        elif image_path_str.startswith('data:'):
+            # For data URLs, use directly
+            image_url = image_path_str
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        else:
+            # For local files, encode as base64
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Determine MIME type
+            mime_type = "image/jpeg"
+            if image_path_str.lower().endswith('.png'):
+                mime_type = "image/png"
+            elif image_path_str.lower().endswith('.webp'):
+                mime_type = "image/webp"
+            elif image_path_str.lower().endswith('.gif'):
+                mime_type = "image/gif"
+            
+            image_url = f"data:{mime_type};base64,{base64_image}"
+            image_content = {"type": "image_url", "image_url": {"url": image_url}}
+        
+        # Invoke model with structured output if requested
+        if structured:
+            try:
+                # Use OpenAI client directly for better control over headers
+                from openai import OpenAI
+                
+                # Build default headers
+                default_headers = {}
+                if self.default_headers:
+                    default_headers.update(self.default_headers)
+                
+                client = OpenAI(
+                    api_key=self.api_key or os.getenv("OPENROUTER_API_KEY"),
+                    base_url=self.base_url,
+                    default_headers=default_headers if default_headers else None
+                )
+                
+                # Build request kwargs
+                request_kwargs = {
+                    "model": self.model_name or "openai/gpt-4o",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                image_content
+                            ]
+                        }
+                    ]
+                }
+                
+                # Only add max_tokens if explicitly provided
+                if "max_tokens" in self.kwargs:
+                    request_kwargs["max_tokens"] = self.kwargs["max_tokens"]
+                
+                # Only add temperature if explicitly provided
+                if "temperature" in self.kwargs:
+                    request_kwargs["temperature"] = self.kwargs["temperature"]
+                
+                try:
+                    response = client.chat.completions.create(**request_kwargs)
+                except Exception as api_error:
+                    # Check if error is about vision not being supported
+                    error_str = str(api_error).lower()
+                    if "image_url" in error_str or "vision" in error_str or "content type" in error_str:
+                        raise ValueError(
+                            f"Model '{self.model_name}' may not support vision/image inputs. "
+                            f"Please check OpenRouter documentation for vision support or use a text-only transcription approach."
+                        ) from api_error
+                    raise
+                
+                # Store token usage
+                if hasattr(response, 'usage') and response.usage:
+                    self._last_token_usage = {
+                        "input_tokens": response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else None,
+                        "output_tokens": response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else None,
+                        "total_tokens": response.usage.total_tokens if hasattr(response.usage, 'total_tokens') else None
+                    }
+                else:
+                    self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+                
+                # Extract content
+                message = response.choices[0].message
+                content = message.content
+                
+                # Try to parse JSON from response
+                try:
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, return raw content
+                    return {"raw_response": content}
+            except Exception as e:
+                # Fallback to regular LangChain if direct API call fails
+                try:
+                    message = HumanMessage(
+                        content=[
+                            {"type": "text", "text": prompt},
+                            image_content
+                        ]
+                    )
+                    response = self.model.invoke([message])
+                    # Store token usage
+                    self._last_token_usage = self._extract_token_usage(response)
+                    # Try to parse JSON from response
+                    content = response.content
+                    # Extract JSON from markdown code blocks if present
+                    if "```json" in content:
+                        json_start = content.find("```json") + 7
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    elif "```" in content:
+                        json_start = content.find("```") + 3
+                        json_end = content.find("```", json_start)
+                        content = content[json_start:json_end].strip()
+                    return json.loads(content)
+                except Exception as parse_error:
+                    # Return raw response if JSON parsing fails
+                    return {"raw_response": response.content if 'response' in locals() else str(e), "error": str(parse_error)}
+        else:
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    image_content
+                ]
+            )
+            response = self.model.invoke([message])
+            # Store token usage
+            self._last_token_usage = self._extract_token_usage(response)
+            return response.content
+
+
+class HuggingFaceTranscriber(ImageTranscriber):
+    """Transcribe images using Hugging Face models via LangChain"""
+    
+    def _init_model(self):
+        # HuggingFace vision models use direct API calls rather than LangChain chat interface
+        model_name = self.model_name or "Salesforce/blip-image-captioning-base"
+        api_key = self.api_key or os.getenv("HUGGINGFACE_API_KEY")
+        self.model_name = model_name
+        self.api_key = api_key
+        # Create a dummy model object to satisfy the base class
+        self.model = None
+    
+    def transcribe(self, image_path: Union[str, Path], prompt: str = None, structured: bool = True) -> Union[str, Dict]:
+        """
+        Transcribe image using Hugging Face API directly
+        
+        Args:
+            image_path: Path to image file or URL
+            prompt: Custom prompt (if None, uses structured extraction prompt)
+            structured: If True, returns structured JSON; if False, returns text
+        
+        Returns:
+            Dict if structured=True, str otherwise
+        """
+        import requests
+        import base64
+        import json
+        
+        # Use structured extraction prompt by default
+        if prompt is None:
+            prompt = """Extract all information from this invoice/receipt image and return it as JSON with the following structure:
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+
+Be precise and extract the exact values as they appear in the image. If a field is not visible, use null. Return ONLY valid JSON, no markdown formatting."""
+        
+        # Load and encode image
+        image_path_str = str(image_path)
+        if image_path_str.startswith(('http://', 'https://')):
+            response = requests.get(image_path_str)
+            response.raise_for_status()
+            image_data = response.content
+        else:
+            with open(image_path_str, 'rb') as f:
+                image_data = f.read()
+        
+        base64_image = base64.b64encode(image_data).decode('utf-8')
+        
+        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+        
+        # For HuggingFace, we need to include the prompt in the request
+        # Note: HuggingFace API structure may vary by model
+        request_data = {
+            "inputs": base64_image
+        }
+        
+        # Some HuggingFace models support text prompts
+        if prompt:
+            request_data["parameters"] = {"prompt": prompt}
+        
+        response = requests.post(
+            f"https://api-inference.huggingface.co/models/{self.model_name}",
+            headers=headers,
+            json=request_data
+        )
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        # Extract text from response
+        if isinstance(result, list) and len(result) > 0:
+            content = result[0].get("generated_text", str(result))
+        else:
+            content = str(result)
+        
+        # Store token usage (HuggingFace may not provide this)
+        self._last_token_usage = {"input_tokens": None, "output_tokens": None, "total_tokens": None}
+        
+        # If structured output requested, try to parse JSON
+        if structured:
+            try:
+                # Extract JSON from markdown code blocks if present
+                if "```json" in content:
+                    json_start = content.find("```json") + 7
+                    json_end = content.find("```", json_start)
+                    content = content[json_start:json_end].strip()
+                elif "```" in content:
+                    json_start = content.find("```") + 3
+                    json_end = content.find("```", json_start)
+                    content = content[json_start:json_end].strip()
+                
+                # Try to parse as JSON
+                if content.strip().startswith('{'):
+                    return json.loads(content)
+                else:
+                    # If not valid JSON, return with error
+                    return {"raw_response": content, "error": "Response is not valid JSON"}
+            except json.JSONDecodeError as e:
+                return {"raw_response": content, "error": f"JSON parsing failed: {str(e)}"}
+        
+        return content
+
+
+def create_transcriber(provider: str, model_name: Optional[str] = None, api_key: Optional[str] = None, **kwargs):
+    """
+    Factory function to create a transcriber instance
+    
+    Args:
+        provider: Provider name (openai, anthropic, google, minimax, groq, openrouter, ollama, huggingface)
+        model_name: Optional model name
+        api_key: Optional API key
+        **kwargs: Additional provider-specific parameters
+    
+    Returns:
+        ImageTranscriber instance
+    """
+    if provider == "openai":
+        return OpenAITranscriber(model_name=model_name, api_key=api_key, **kwargs)
+    elif provider == "anthropic":
+        return AnthropicTranscriber(model_name=model_name, api_key=api_key, **kwargs)
+    elif provider == "google":
+        return GoogleTranscriber(model_name=model_name, api_key=api_key, **kwargs)
+    elif provider == "minimax":
+        return MiniMaxTranscriber(model_name=model_name or "MiniMax-M2", api_key=api_key, **kwargs)
+    elif provider == "groq":
+        return GroqTranscriber(model_name=model_name or "llama-3.1-70b-versatile", api_key=api_key, **kwargs)
+    elif provider == "openrouter":
+        return OpenRouterTranscriber(model_name=model_name or "openai/gpt-4o", api_key=api_key, **kwargs)
+    elif provider == "ollama":
+        return OllamaTranscriber(model_name=model_name or "llava", **kwargs)
+    elif provider == "huggingface":
+        return HuggingFaceTranscriber(
+            model_name=model_name or "Salesforce/blip-image-captioning-base",
+            api_key=api_key,
+            **kwargs
+        )
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
+
+def process_orientation_test_mode(args):
+    """Handle orientation test mode"""
+    from orientation_test import OrientationTester
+    
+    # Parse model configurations from command line
+    # Format: --models "name1:provider1:model1" "name2:provider2:model2"
+    model_configs = []
+    
+    if args.models:
+        for model_spec in args.models:
+            parts = model_spec.split(':')
+            if len(parts) >= 3:
+                name, provider, model_name = parts[0], parts[1], parts[2]
+                config = {
+                    'name': name,
+                    'provider': provider,
+                    'model_name': model_name,
+                    'api_key': args.api_key  # Use same API key for all if provided
+                }
+                model_configs.append(config)
+            else:
+                print(f"Warning: Invalid model specification '{model_spec}'. Expected format: 'name:provider:model_name'")
+    else:
+        # Default: gpt-4o-mini vs gpt-4o
+        model_configs = [
+            {'name': 'GPT-4o-mini', 'provider': 'openai', 'model_name': 'gpt-4o-mini'},
+            {'name': 'GPT-4o', 'provider': 'openai', 'model_name': 'gpt-4o'}
+        ]
+    
+    if not model_configs:
+        print("Error: No valid model configurations provided")
+        return 1
+    
+    # Initialize orientation tester
+    tester = OrientationTester(images_dir=args.images_dir)
+    
+    # Run orientation test
+    parallel = not args.no_parallel
+    report, model_config_map = tester.test_batch(
+        model_configs=model_configs,
+        max_images=args.max_images,
+        replications=args.replications,
+        parallel=parallel,
+        max_workers=args.max_workers
+    )
+    
+    # Print summary
+    tester.print_summary(report)
+    
+    # Save results
+    output_file = args.output or "orientation_test_results.json"
+    tester.save_results(report, output_file, model_config_map)
+    
+    return 0
+
+
+def process_comparison_mode(args):
+    """Handle model comparison mode"""
+    from model_comparator import ModelComparator
+    
+    # Parse model configurations from command line
+    # Format: --models "name1:provider1:model1" "name2:provider2:model2"
+    model_configs = []
+    
+    if args.models:
+        for model_spec in args.models:
+            parts = model_spec.split(':')
+            if len(parts) >= 3:
+                name, provider, model_name = parts[0], parts[1], parts[2]
+                config = {
+                    'name': name,
+                    'provider': provider,
+                    'model_name': model_name,
+                    'api_key': args.api_key  # Use same API key for all if provided
+                }
+                model_configs.append(config)
+            else:
+                print(f"Warning: Invalid model specification '{model_spec}'. Expected format: 'name:provider:model_name'")
+    else:
+        # Default comparison: gpt-4o-mini vs gpt-4o
+        model_configs = [
+            {'name': 'GPT-4o-mini', 'provider': 'openai', 'model_name': 'gpt-4o-mini'},
+            {'name': 'GPT-4o', 'provider': 'openai', 'model_name': 'gpt-4o'}
+        ]
+    
+    if not model_configs:
+        print("Error: No valid model configurations provided")
+        return 1
+    
+    # Initialize comparator
+    comparator = ModelComparator(
+        images_dir=args.images_dir,
+        ground_truth_dir=args.ground_truth_dir
+    )
+    
+    # Run comparison
+    comparison_result = comparator.compare_models(
+        model_configs=model_configs,
+        prompt=args.prompt,
+        max_images=args.max_images,
+        save_individual_results=True
+    )
+    
+    # Print summary
+    comparator.print_comparison_summary(comparison_result)
+    
+    # Generate report only if explicitly requested
+    if args.output:
+        comparator.generate_comparison_report(comparison_result, args.output)
+    
+    # Save results to directory
+    # Save results to directory
+    # Always save to default directory if not specified
+    output_dir = args.output_dir or "results/comparison"
+    comparator.save_comparison_results(comparison_result, output_dir)
+    
+    return 0
+
+
+def process_rotated_extraction_test_mode(args):
+    """Handle rotated extraction test mode"""
+    from rotated_extraction_test import RotatedExtractionTester
+    
+    # Parse model configurations from command line
+    # Format: --models "name1:provider1:model1" "name2:provider2:model2"
+    model_configs = []
+    
+    if args.models:
+        for model_spec in args.models:
+            parts = model_spec.split(':')
+            if len(parts) >= 3:
+                name, provider, model_name = parts[0], parts[1], parts[2]
+                config = {
+                    'name': name,
+                    'provider': provider,
+                    'model_name': model_name,
+                    'api_key': args.api_key  # Use same API key for all if provided
+                }
+                model_configs.append(config)
+            else:
+                print(f"Warning: Invalid model specification '{model_spec}'. Expected format: 'name:provider:model_name'")
+    else:
+        print("Error: --models argument is required for rotated extraction test mode")
+        print("Example: --models 'GPT-4o:openai:gpt-4o' 'Claude:anthropic:claude-3-5-sonnet-20241022'")
+        return 1
+    
+    if not model_configs:
+        print("Error: No valid model configurations provided")
+        return 1
+    
+    # Initialize tester
+    tester = RotatedExtractionTester(
+        images_dir=args.images_dir,
+        ground_truth_dir=args.ground_truth_dir
+    )
+    
+    # Run test
+    report, model_config_map = tester.test_batch(
+        model_configs=model_configs,
+        prompt=args.prompt,
+        max_images=args.max_images,
+        parallel=not args.no_parallel,
+        max_workers=args.max_workers
+    )
+    
+    # Print summary
+    tester.print_summary(report)
+    
+    # Save results
+    output_file = args.output or "rotated_extraction_test_results.json"
+    tester.save_results(report, output_file, model_config_map)
+    
+    return 0
+
+
+def process_batch_mode(args):
+    """Handle batch processing mode"""
+    from batch_processor import BatchProcessor
+    from evaluator import TranscriptionEvaluator
+    
+    # Create transcriber
+    transcriber = create_transcriber(
+        provider=args.provider,
+        model_name=args.model,
+        api_key=args.api_key
+    )
+    
+    # Initialize batch processor
+    processor = BatchProcessor(
+        transcriber=transcriber,
+        images_dir=args.images_dir,
+        ground_truth_dir=args.ground_truth_dir
+    )
+    
+    # Process batch
+    print(f"Processing images from: {args.images_dir}")
+    if args.ground_truth_dir:
+        print(f"Ground truth directory: {args.ground_truth_dir}")
+    
+    batch_result = processor.process_batch(
+        prompt=args.prompt,
+        max_images=args.max_images
+    )
+    
+    # Save results
+    output_file = args.output or "batch_results.json"
+    processor.save_results(batch_result, output_file)
+    
+    # Evaluate if ground truth is available
+    if args.ground_truth_dir:
+        evaluator = TranscriptionEvaluator()
+        metrics = evaluator.calculate_metrics(batch_result)
+        evaluator.print_summary(batch_result, metrics)
+        
+        if args.report:
+            report_file = args.report
+        else:
+            report_file = output_file.replace('.json', '_report.json')
+        evaluator.save_detailed_report(batch_result, metrics, report_file)
+    
+    return 0
+
+
+def process_single_mode(args):
+    """Handle single image processing mode"""
+    # Create transcriber
+    transcriber = create_transcriber(
+        provider=args.provider,
+        model_name=args.model,
+        api_key=args.api_key
+    )
+    
+    # Transcribe image
+    try:
+        result = transcriber.transcribe(args.image, args.prompt)
+        print("\n" + "="*60)
+        print("TRANSCRIPTION RESULT:")
+        print("="*60)
+        print(result)
+        print("="*60)
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return 1
+
+
+def main():
+    """Main entry point"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="Transcribe images using LLM models",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Single image
+  python image_transcriber.py image.jpg --provider openai
+  
+  # Single image with MiniMax
+  python image_transcriber.py image.jpg --provider minimax --model MiniMax-M2
+  
+  # Batch processing
+  python image_transcriber.py --batch --images-dir images --ground-truth-dir gdt --provider openai
+  
+  # Batch processing with MiniMax
+  python image_transcriber.py --batch --images-dir images --ground-truth-dir gdt --provider minimax --model MiniMax-M2
+  
+  # As-is Data Extraction (compare GPT-4o-mini vs GPT-4o)
+  python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt
+  
+  # As-is Data Extraction with custom models including MiniMax
+  python image_transcriber.py --compare --images-dir images --ground-truth-dir gdt --models "GPT-4o-mini:openai:gpt-4o-mini" "GPT-4o:openai:gpt-4o" "MiniMax-M2:minimax:MiniMax-M2"
+  
+  # Orientation Extraction Test with single model
+  python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o"
+  
+  # Orientation Extraction Test with MiniMax
+  python image_transcriber.py --orientation-test --images-dir images --models "MiniMax-M2:minimax:MiniMax-M2"
+  
+  # Orientation Extraction Test with multiple replications
+  python image_transcriber.py --orientation-test --images-dir images --models "GPT-4o:openai:gpt-4o" --replications 3
+  
+  # Rotated Extraction Test (data extraction accuracy on rotated images)
+  python image_transcriber.py --rotated-extraction-test --images-dir images --ground-truth-dir gdt --models "GPT-4o:openai:gpt-4o" "Claude:anthropic:claude-3-5-sonnet-20241022"
+  
+  # Rotated Extraction Test with MiniMax
+  python image_transcriber.py --rotated-extraction-test --images-dir images --ground-truth-dir gdt --models "MiniMax-M2:minimax:MiniMax-M2" "MiniMax-M2-Stable:minimax:MiniMax-M2-Stable"
+        """
+    )
+    
+    # Mode selection
+    parser.add_argument("--batch", action="store_true",
+                       help="Enable batch processing mode")
+    parser.add_argument("--compare", action="store_true",
+                       help="Enable As-is Data Extraction mode")
+    parser.add_argument("--orientation-test", action="store_true",
+                       help="Enable Orientation Extraction Test mode")
+    parser.add_argument("--rotated-extraction-test", action="store_true",
+                       help="Enable Rotated Extraction Test mode (tests data extraction accuracy on rotated images)")
+    
+    # Single image mode arguments
+    parser.add_argument("image", nargs="?", help="Path to image file or image URL (for single image mode)")
+    
+    # Batch/Comparison mode arguments
+    parser.add_argument("--images-dir", default="images",
+                       help="Directory containing images to process (batch/comparison mode)")
+    parser.add_argument("--ground-truth-dir", default="gdt",
+                       help="Directory containing ground truth files (batch/comparison mode)")
+    parser.add_argument("--output", help="Output file for results (default: batch_results.json or model_comparison_report.json)")
+    parser.add_argument("--output-dir", help="Output directory for comparison results")
+    parser.add_argument("--report", help="Output file for detailed evaluation report")
+    parser.add_argument("--max-images", type=int,
+                       help="Maximum number of images to process (batch/comparison mode)")
+    
+    # Comparison/Orientation test mode arguments
+    parser.add_argument("--models", nargs="+",
+                       help="Model specifications for comparison/orientation test (format: 'name:provider:model_name'). Example: 'GPT-4o-mini:openai:gpt-4o-mini' 'GPT-4o:openai:gpt-4o'")
+    parser.add_argument("--replications", type=int, default=1,
+                       help="Number of replications per test (for orientation test mode, default: 1)")
+    parser.add_argument("--no-parallel", action="store_true",
+                       help="Disable parallel processing (for orientation test mode)")
+    parser.add_argument("--max-workers", type=int, default=10,
+                       help="Maximum number of parallel workers (for orientation test mode, default: 10)")
+    
+    # Common arguments
+    parser.add_argument("--provider", choices=["openai", "anthropic", "google", "minimax", "groq", "openrouter", "ollama", "huggingface"],
+                       default="openai", help="LLM provider to use (single/batch mode)")
+    parser.add_argument("--model", help="Model name (optional, uses defaults if not specified)")
+    parser.add_argument("--prompt", default="Transcribe or describe everything you see in this image in detail.",
+                       help="Custom prompt for transcription")
+    parser.add_argument("--api-key", help="API key (or set environment variable)")
+    
+    args = parser.parse_args()
+    
+    # Determine mode
+    if args.rotated_extraction_test:
+        return process_rotated_extraction_test_mode(args)
+    elif args.orientation_test:
+        return process_orientation_test_mode(args)
+    elif args.compare:
+        return process_comparison_mode(args)
+    elif args.batch:
+        return process_batch_mode(args)
+    elif args.image:
+        return process_single_mode(args)
+    else:
+        parser.error("Either provide an image path (single mode), use --batch flag (batch mode), --compare flag (comparison mode), --orientation-test flag (orientation test mode), or --rotated-extraction-test flag (rotated extraction test mode)")
+
+
+if __name__ == "__main__":
+    exit(main())
+

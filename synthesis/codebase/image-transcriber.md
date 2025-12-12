@@ -1,0 +1,326 @@
+# Image Transcriber Module
+
+## Overview
+
+The `image_transcriber.py` module is the core of the Image Transcriber application. It provides a unified interface for transcribing images using various LLM providers with vision capabilities, built on top of LangChain.
+
+## Architecture
+
+### Base Class: `ImageTranscriber`
+
+The base class defines the common interface for all transcriber implementations.
+
+**Location**: `image_transcriber.py:22-74`
+
+**Key Methods**:
+- `__init__(model_name, api_key, **kwargs)`: Initialize transcriber with model configuration
+- `_init_model()`: Abstract method to be implemented by subclasses
+- `transcribe(image_path, prompt)`: Transcribe an image using the configured model
+
+**Key Features**:
+- Supports both local image files and image URLs
+- Handles base64 encoding for local images
+- Determines MIME type automatically (JPEG, PNG, WebP, GIF)
+- Uses LangChain's `HumanMessage` for consistent message format
+
+### Provider Implementations
+
+#### 1. `OpenAITranscriber`
+
+**Location**: `image_transcriber.py:77-296`
+
+**Features**:
+- Supports structured JSON output for invoice/receipt extraction
+- Uses OpenAI's structured output API when `structured=True`
+- Falls back to regular LangChain if structured output fails
+- Validates vision model support
+- Default model: `gpt-4o`
+
+**Vision Models Supported**:
+- `gpt-4o`, `gpt-4o-mini`
+- `gpt-4-turbo`, `gpt-4-vision-preview`
+- `gpt-4`, `gpt-4-turbo-preview`
+
+**Special Methods**:
+- `_supports_vision()`: Checks if model supports vision inputs
+- `transcribe(image_path, prompt, structured)`: Enhanced transcription with structured output support
+
+**Structured Output Schema**:
+```json
+{
+    "company": "Company name",
+    "date": "Date in DD/MM/YYYY format",
+    "address": "Full address",
+    "total": "Total amount"
+}
+```
+
+#### 2. `AnthropicTranscriber`
+
+**Location**: `image_transcriber.py:299-324`
+
+**Features**:
+- Uses LangChain's `ChatAnthropic`
+- Default model: `claude-3-5-sonnet-20241022`
+- Supports custom API keys and model parameters
+
+#### 3. `GoogleTranscriber`
+
+**Location**: `image_transcriber.py:527-682`
+
+**Features**:
+- Uses LangChain's `ChatGoogleGenerativeAI`
+- Default model: `gemini-pro-vision`
+- Uses `google_api_key` parameter name
+
+#### 4. `MiniMaxTranscriber`
+
+**Location**: `image_transcriber.py:685-924`
+
+**Features**:
+- Uses OpenAI-compatible API via LangChain's `ChatOpenAI` with custom base URL
+- Supports MiniMax models: `MiniMax-M2`, `MiniMax-M2-Stable`
+- Default model: `MiniMax-M2`
+- Default base URL: `https://api.minimax.io/v1` (international) or `https://api.minimaxi.com/v1` (China)
+- Supports `reasoning_split` parameter for interleaved thinking
+- Temperature range: (0.0, 1.0], default: 1.0 (recommended)
+- Uses `MINIMAX_API_KEY` or `OPENAI_API_KEY` environment variable
+
+**Configuration**:
+- `base_url`: Can be set via `base_url` kwarg or `MINIMAX_BASE_URL`/`OPENAI_BASE_URL` env var
+- `reasoning_split`: Set to `True` in kwargs to enable reasoning details separation
+- `temperature`: Defaults to 1.0 (recommended by MiniMax)
+
+**Important Notes**:
+- Some OpenAI parameters (e.g., `presence_penalty`, `frequency_penalty`, `logit_bias`) are ignored
+- Image and audio type inputs support may vary by model
+- The `n` parameter only supports value 1
+
+#### 5. `GroqTranscriber`
+
+**Location**: `image_transcriber.py:1049-1210`
+
+**Features**:
+- Uses OpenAI-compatible API via LangChain's `ChatOpenAI` with custom base URL
+- Supports Groq models: `llama-3.1-70b-versatile`, `llama-3.1-8b-instant`, `llama-3.3-70b-versatile`, `llama-3.3-8b-instant`, `mixtral-8x7b-32768`, `gemma2-9b-it`, `gemma2-27b-it`, `openai/gpt-oss-20b`
+- Default model: `llama-3.1-70b-versatile`
+- Default base URL: `https://api.groq.com/openai/v1`
+- Uses `GROQ_API_KEY` environment variable
+
+**Configuration**:
+- `base_url`: Can be set via `base_url` kwarg or `GROQ_BASE_URL` env var
+- `temperature`: Optional temperature parameter
+- `max_tokens`: Optional max tokens parameter
+
+**Important Notes**:
+- Groq models may have limited or no vision support depending on the model
+- If vision is not supported, the API will return an error which is caught and reported
+- Uses OpenAI-compatible API format for consistency
+
+#### 6. `OpenRouterTranscriber`
+
+**Location**: `image_transcriber.py:1263-1419`
+
+**Features**:
+- Uses OpenAI-compatible API via LangChain's `ChatOpenAI` with custom base URL
+- Supports many models through OpenRouter in format: `provider/model-name`
+- Examples: `openai/gpt-4o`, `anthropic/claude-3.5-sonnet`, `google/gemini-pro-vision`
+- Default model: `openai/gpt-4o`
+- Default base URL: `https://openrouter.ai/api/v1`
+- Uses `OPENROUTER_API_KEY` environment variable
+- Supports optional headers: `HTTP-Referer` and `X-Title` for rankings on openrouter.ai
+
+**Configuration**:
+- `base_url`: Can be set via `base_url` kwarg or `OPENROUTER_BASE_URL` env var
+- `http_referer`: Optional site URL for rankings (via `http_referer` kwarg or `OPENROUTER_HTTP_REFERER` env var)
+- `x_title`: Optional site title for rankings (via `x_title` kwarg or `OPENROUTER_X_TITLE` env var)
+- `temperature`: Optional temperature parameter
+- `max_tokens`: Optional max tokens parameter
+
+**Important Notes**:
+- OpenRouter provides access to many different models from various providers
+- Vision support depends on the underlying model being used
+- Optional headers (`HTTP-Referer` and `X-Title`) help with rankings on openrouter.ai
+- Model names must include the provider prefix (e.g., `openai/gpt-4o` not just `gpt-4o`)
+
+#### 7. `OllamaTranscriber`
+
+**Location**: `image_transcriber.py:350-410`
+
+**Features**:
+- Runs locally, no API key required
+- Default model: `llava`
+- Default base URL: `http://localhost:11434`
+- Handles base64 encoding for local files
+- Has fallback mechanism for different Ollama message formats
+
+**Special Handling**:
+- Downloads and encodes images from URLs
+- Tries multiple message formats if first attempt fails
+
+#### 8. `HuggingFaceTranscriber`
+
+**Location**: `image_transcriber.py:1422-1485`
+
+**Features**:
+- Uses direct HuggingFace API calls (not LangChain chat interface)
+- Default model: `Salesforce/blip-image-captioning-base`
+- Supports optional API key for private models
+- Handles both local files and URLs
+
+**API Endpoint**: `https://api-inference.huggingface.co/models/{model_name}`
+
+### Factory Function
+
+**Function**: `create_transcriber(provider, model_name, api_key, **kwargs)`
+
+**Location**: `image_transcriber.py:459-487`
+
+**Purpose**: Creates appropriate transcriber instance based on provider name
+
+**Supported Providers**:
+- `"openai"` → `OpenAITranscriber`
+- `"anthropic"` → `AnthropicTranscriber`
+- `"google"` → `GoogleTranscriber`
+- `"minimax"` → `MiniMaxTranscriber`
+- `"groq"` → `GroqTranscriber`
+- `"openrouter"` → `OpenRouterTranscriber`
+- `"ollama"` → `OllamaTranscriber`
+- `"huggingface"` → `HuggingFaceTranscriber`
+
+### CLI Interface
+
+**Function**: `main()`
+
+**Location**: `image_transcriber.py:622-691`
+
+**Modes**:
+1. **Single Image Mode**: Process one image
+   - Argument: `image` (positional)
+   - Options: `--provider`, `--model`, `--prompt`, `--api-key`
+
+2. **Batch Mode**: Process multiple images
+   - Flag: `--batch`
+   - Options: `--images-dir`, `--ground-truth-dir`, `--output`, `--max-images`, `--report`
+
+3. **As-is Data Extraction Mode**: Compare multiple models for data extraction
+   - Flag: `--compare`
+   - Options: `--models`, `--images-dir`, `--ground-truth-dir`, `--output`, `--output-dir`
+
+4. **Orientation Extraction Test Mode**: Test orientation detection capabilities
+   - Flag: `--orientation-test`
+   - Options: `--models`, `--images-dir`, `--output-dir`
+
+**Mode Handlers**:
+- `process_single_mode(args)`: Handles single image processing
+- `process_batch_mode(args)`: Handles batch processing (delegates to `BatchProcessor`)
+- `process_comparison_mode(args)`: Handles as-is data extraction (delegates to `ModelComparator`)
+- `process_orientation_test_mode(args)`: Handles orientation testing (delegates to `OrientationTest`)
+
+## Environment Variables
+
+The module loads API keys from environment variables or `.env` file:
+
+- `OPENAI_API_KEY`: OpenAI API key
+- `ANTHROPIC_API_KEY`: Anthropic API key
+- `GOOGLE_API_KEY`: Google API key
+- `MINIMAX_API_KEY`: MiniMax API key (falls back to `OPENAI_API_KEY` if not set)
+- `MINIMAX_BASE_URL`: MiniMax base URL (default: `https://api.minimax.io/v1` for international, `https://api.minimaxi.com/v1` for China)
+- `GROQ_API_KEY`: Groq API key
+- `GROQ_BASE_URL`: Groq base URL (default: `https://api.groq.com/openai/v1`)
+- `OPENROUTER_API_KEY`: OpenRouter API key
+- `OPENROUTER_BASE_URL`: OpenRouter base URL (default: `https://openrouter.ai/api/v1`)
+- `OPENROUTER_HTTP_REFERER`: Optional site URL for rankings on openrouter.ai
+- `OPENROUTER_X_TITLE`: Optional site title for rankings on openrouter.ai
+- `HUGGINGFACE_API_KEY`: HuggingFace API key (optional)
+
+**Loading Priority**: `.env` file values override system environment variables (using `load_dotenv(override=True)`)
+
+## Image Handling
+
+### Supported Formats
+- JPEG/JPG
+- PNG
+- WebP
+- GIF
+
+### Image Processing Flow
+
+1. **Local Files**:
+   - Read file as binary
+   - Encode to base64
+   - Determine MIME type from extension
+   - Create data URL: `data:{mime_type};base64,{base64_data}`
+
+2. **URLs**:
+   - Use URL directly (for OpenAI, Anthropic, Google)
+   - Download and encode (for Ollama, HuggingFace)
+
+## Error Handling
+
+- **Import Errors**: Raises `ImportError` with installation instructions
+- **API Errors**: Catches and reports model-specific errors
+- **Vision Model Errors**: Validates model support and provides helpful error messages
+- **JSON Parsing**: Falls back gracefully if structured output parsing fails
+
+## Dependencies
+
+- `langchain-core`: Core LangChain functionality
+- `langchain-openai`: OpenAI integration (also used for MiniMax)
+- `langchain-anthropic`: Anthropic integration
+- `langchain-google-genai`: Google integration
+- `langchain-ollama`: Ollama integration
+- `python-dotenv`: Environment variable loading
+- `openai`: Direct OpenAI client (for structured output and MiniMax)
+- `requests`: HTTP requests (for HuggingFace)
+
+## Usage Examples
+
+### Basic Usage
+```python
+from image_transcriber import OpenAITranscriber
+
+transcriber = OpenAITranscriber(model_name="gpt-4o")
+result = transcriber.transcribe("image.jpg")
+```
+
+### Structured Output
+```python
+from image_transcriber import OpenAITranscriber
+
+transcriber = OpenAITranscriber(model_name="gpt-4o")
+result = transcriber.transcribe("invoice.jpg", structured=True)
+# Returns: {"company": "...", "date": "...", "address": "...", "total": "..."}
+```
+
+### Using Factory Function
+```python
+from image_transcriber import create_transcriber
+
+transcriber = create_transcriber(
+    provider="anthropic",
+    model_name="claude-3-5-sonnet-20241022",
+    temperature=0.5
+)
+result = transcriber.transcribe("image.jpg", prompt="Describe this image")
+```
+
+## Important Notes
+
+- **Structured Output**: `OpenAITranscriber`, `MiniMaxTranscriber`, `GroqTranscriber`, and `OpenRouterTranscriber` support structured JSON output
+- **Model Parameters**: Not all models support all parameters (e.g., `max_tokens`, `temperature`)
+- **API Keys**: Can be provided via constructor, environment variable, or `.env` file
+- **URL Support**: All providers support image URLs, but processing may differ
+- **Error Recovery**: OpenAI and MiniMax transcribers have fallback mechanisms for structured output failures
+- **MiniMax Temperature**: Must be in range (0.0, 1.0], recommended value is 1.0
+
+## Extension Points
+
+To add a new provider:
+
+1. Create a new class inheriting from `ImageTranscriber`
+2. Implement `_init_model()` method
+3. Optionally override `transcribe()` if special handling is needed
+4. Add provider to `create_transcriber()` factory function
+5. Add provider to CLI argument choices
+
